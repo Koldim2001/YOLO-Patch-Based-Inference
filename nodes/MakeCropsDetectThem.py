@@ -16,7 +16,8 @@ class MakeCropsDetectThem:
         segment=False, 
         shape_x=700, shape_y=700,
         overlap_x=25, overlap_y=25, 
-        show_crops=False
+        show_crops=False,
+        resize_results=False,
     ) -> None:
         self.model = YOLO(model_path)  # Load the model from the specified path
         self.image = image  # Input image
@@ -29,11 +30,13 @@ class MakeCropsDetectThem:
         self.overlap_x = overlap_x  # Percentage of overlap along the x-axis
         self.overlap_y = overlap_y  # Percentage of overlap along the y-axis
         self.crops = []  # List to store the CropElement objects
-        self.show_crops = show_crops
+        self.show_crops = show_crops  # нужно ли делать визуализацию нарезки кропов
+        self.resize_results = resize_results  # нужно ли делать приведение к исходным размерам изображения (медленная опреация)
 
         self.crops = self.get_crops_xy(self.image, shape_x=self.shape_x, shape_y=self.shape_y,
                  overlap_x=self.overlap_x, overlap_y=self.overlap_y, show=self.show_crops, return_crop_elements=True)
         self._detect_objects()
+
 
 
         
@@ -118,3 +121,5 @@ class MakeCropsDetectThem:
         for crop in self.crops:
             crop.calculate_inference(self.model, imgsz=self.imgsz, conf=self.conf, iou=self.iou, segment=self.segment)
             crop.calculate_real_values()
+            if self.resize_results:
+                crop.resize_results()

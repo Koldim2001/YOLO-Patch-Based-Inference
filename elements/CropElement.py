@@ -82,3 +82,26 @@ class CropElement:
 
                 # Append the masked image to the list of detected_masks_real
                 self.detected_masks_real.append(black_image)
+
+
+    def resize_results(self):
+        resized_xyxy = []
+        resized_masks = []
+
+        for bbox in self.detected_xyxy_real:
+            # Resize bbox coordinates
+            x_min, y_min, x_max, y_max = bbox
+            x_min_resized = int(x_min * (self.source_image.shape[1] / self.source_image_resized.shape[1]))
+            y_min_resized = int(y_min * (self.source_image.shape[0] / self.source_image_resized.shape[0]))
+            x_max_resized = int(x_max * (self.source_image.shape[1] / self.source_image_resized.shape[1]))
+            y_max_resized = int(y_max * (self.source_image.shape[0] / self.source_image_resized.shape[0]))
+            resized_xyxy.append([x_min_resized, y_min_resized, x_max_resized, y_max_resized])
+
+        for mask in self.detected_masks_real:
+            # Resize mask
+            mask_resized = cv2.resize(mask, (self.source_image.shape[1], self.source_image.shape[0]),
+                                    interpolation=cv2.INTER_NEAREST)
+            resized_masks.append(mask_resized)
+
+        self.detected_xyxy_real = resized_xyxy
+        self.detected_masks_real = resized_masks
