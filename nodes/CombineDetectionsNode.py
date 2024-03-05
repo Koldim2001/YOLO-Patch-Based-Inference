@@ -12,6 +12,7 @@ class CombineDetectionsNode:
         nms_iou=0.6
     ) -> None:
         self.conf_treshold = element_crops.conf
+        self.class_names = element_crops.class_names_dict 
         self.crops = element_crops.crops  # List to store the CropElement objects
         if element_crops.resize_results:
             self.image = element_crops.crops[0].source_image_resized
@@ -22,13 +23,10 @@ class CombineDetectionsNode:
             self.detected_conf_list_full,
             self.detected_xyxy_list_full,
             self.detected_masks_list_full,
-            self.detected_cls_list_full
+            self.detected_cls_id_list_full
         ) = self.combinate_detections(crops=self.crops)
 
-        print(np.array(self.detected_conf_list_full).shape)
-        print(np.array(self.detected_xyxy_list_full).shape)
-        print(np.array(self.detected_masks_list_full).shape)
-        print(np.array(self.detected_cls_list_full).shape)
+        self.detected_cls_names_list_full = [self.class_names[value] for value in self.detected_cls_id_list_full] # make str list
 
         # Вызываем метод nms для фильтрации предсказаний
         self.filtered_indices = self.nms(
@@ -40,19 +38,13 @@ class CombineDetectionsNode:
         # Применяем фильтрацию к спискам предсказаний
         self.filtered_confidences = [self.detected_conf_list_full[i] for i in self.filtered_indices]
         self.filtered_boxes = [self.detected_xyxy_list_full[i] for i in self.filtered_indices]
-        self.filtered_classes = [self.detected_cls_list_full[i] for i in self.filtered_indices]
+        self.filtered_classes_id = [self.detected_cls_id_list_full[i] for i in self.filtered_indices]
+        self.filtered_classes_names = [self.detected_cls_names_list_full[i] for i in self.filtered_indices]
 
         if element_crops.segment:
             self.filtered_masks = [self.detected_masks_list_full[i] for i in self.filtered_indices]
         else:
             self.filtered_masks = []
-
-
-        print(np.array(self.filtered_confidences).shape)
-        print(np.array(self.filtered_boxes).shape)
-        print(np.array(self.filtered_masks).shape)
-        print(np.array(self.filtered_classes).shape)
-
 
         
     def combinate_detections(self, crops):

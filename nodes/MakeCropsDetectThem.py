@@ -33,6 +33,8 @@ class MakeCropsDetectThem:
         self.show_crops = show_crops  # нужно ли делать визуализацию нарезки кропов
         self.resize_results = resize_results  # нужно ли делать приведение к исходным размерам изображения (медленная опреация)
 
+        self.class_names_dict = self.model.names
+
         self.crops = self.get_crops_xy(self.image, shape_x=self.shape_x, shape_y=self.shape_y,
                  overlap_x=self.overlap_x, overlap_y=self.overlap_y, show=self.show_crops, return_crop_elements=True)
         self._detect_objects()

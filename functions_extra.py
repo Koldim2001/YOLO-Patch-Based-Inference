@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def visualise_results(img, model, imgsz=640, conf=0.5, iou=0.7, segment=False, show_boxes=True,
+def visualize_results_usual_yolo_inference(img, model, imgsz=640, conf=0.5, iou=0.7, segment=False, show_boxes=True,
      show_class=True, fill_mask=False, alpha=0.3, color_class_background=(0, 0, 255), color_class_text=(255, 255, 255),
      thickness=4, font=cv2.FONT_HERSHEY_SIMPLEX, font_scale=1.5, delta_colors=0, dpi=150):
     """
@@ -171,3 +171,100 @@ def get_crops(image_full, shape_x: int, shape_y: int,
         print('Number of generated images:', count)
 
     return data_all_crops
+
+
+
+
+def visualize_results(
+    img,
+    confidences,
+    boxes,
+    masks,
+    classes_ids,
+    classes_names,
+    segment=False,
+    show_boxes=True,
+    show_class=True,
+    fill_mask=False,
+    alpha=0.3,
+    color_class_background=(0, 0, 255),
+    color_class_text=(255, 255, 255),
+    thickness=4,
+    font=cv2.FONT_HERSHEY_SIMPLEX,
+    font_scale=1.5,
+    delta_colors=0,
+    dpi=150
+):
+    """
+    Visualizes the results of object detection or segmentation on an image.
+
+    Args:
+        img (numpy.ndarray): The input image.
+        confidences (list): A list of confidence scores corresponding to each bounding box.
+        boxes (list): A list of bounding boxes in the format [x_min, y_min, x_max, y_max].
+        masks (list): A list of masks.
+        classes_ids (list): A list of class IDs for each detection.
+        classes_names (list): A list of class names corresponding to the class IDs.
+        segment (bool): Whether to perform instance segmentation. Default is False.
+        show_boxes (bool): Whether to show bounding boxes. Default is True.
+        show_class (bool): Whether to show class labels. Default is True.
+        fill_mask (bool): Whether to fill the segmented regions with color. Default is False.
+        alpha (float): The transparency of filled masks. Default is 0.3.
+        color_class_background (tuple): The background color for class labels. Default is (0, 0, 255) (blue).
+        color_class_text (tuple): The text color for class labels. Default is (255, 255, 255) (white).
+        thickness (int): The thickness of bounding box and text. Default is 4.
+        font: The font type for class labels. Default is cv2.FONT_HERSHEY_SIMPLEX.
+        font_scale (float): The scale factor for font size. Default is 1.5.
+        delta_colors (int): The random seed offset for color variation. Default is 0.
+        dpi (int): Final visualization size (plot is bigger when dpi is higher). Default is 150.
+
+    Returns:
+        None
+    """
+    
+    # Create a copy of the input image
+    labeled_image = img.copy()
+    
+    # Process each prediction
+    for i in range(len(confidences)):
+        # Get the class for the current detection
+        class_name = str(classes_names[i])
+
+        # Assign color according to class
+        random.seed(int(classes_ids[i] + delta_colors))
+        color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+
+        box = boxes[i]
+        x_min, y_min, x_max, y_max = box
+
+        if segment:
+            mask = masks[i]
+            # Resize mask to the size of the original image using nearest neighbor interpolation
+            mask_resized = cv2.resize(np.array(mask), (img.shape[1], img.shape[0]), interpolation=cv2.INTER_NEAREST)
+            # Add label to the mask
+            mask_contours, _ = cv2.findContours(mask_resized.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            cv2.drawContours(labeled_image, mask_contours, -1, color, thickness)
+
+            if fill_mask:
+                color_mask = np.zeros_like(img)
+                color_mask[mask_resized > 0] = color
+                labeled_image = cv2.addWeighted(labeled_image, 1, color_mask, alpha, 0)
+
+        # Write class label
+        if show_boxes:
+            cv2.rectangle(labeled_image, (x_min, y_min), (x_max, y_max), color, thickness)
+
+        if show_class:
+            label = str(class_name)
+            (text_width, text_height), _ = cv2.getTextSize(label, font, font_scale, thickness)
+            cv2.rectangle(labeled_image, (x_min, y_min), (x_min + text_width + 5, y_min + text_height + 5),
+                          color_class_background, -1)
+            cv2.putText(labeled_image, label, (x_min + 5, y_min + text_height), font, font_scale, color_class_text,
+                        thickness=thickness)
+
+    # Display the final image with overlaid masks and labels
+    plt.figure(figsize=(8, 8), dpi=dpi)
+    labeled_image = cv2.cvtColor(labeled_image, cv2.COLOR_BGR2RGB)
+    plt.imshow(labeled_image)
+    plt.axis('off')
+    plt.show()
