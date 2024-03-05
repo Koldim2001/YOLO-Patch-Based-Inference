@@ -15,7 +15,8 @@ class MakeCropsDetectThem:
         imgsz=640, conf=0.5, iou=0.7, 
         segment=False, 
         shape_x=700, shape_y=700,
-        overlap_x=25, overlap_y=25,
+        overlap_x=25, overlap_y=25, 
+        show_crops=False
     ) -> None:
         self.model = YOLO(model_path)  # Load the model from the specified path
         self.image = image  # Input image
@@ -28,10 +29,10 @@ class MakeCropsDetectThem:
         self.overlap_x = overlap_x  # Percentage of overlap along the x-axis
         self.overlap_y = overlap_y  # Percentage of overlap along the y-axis
         self.crops = []  # List to store the CropElement objects
-
+        self.show_crops = show_crops
 
         self.crops = self.get_crops_xy(self.image, shape_x=self.shape_x, shape_y=self.shape_y,
-                 overlap_x=self.overlap_x, overlap_y=self.overlap_y, show=False, return_crop_elements=True)
+                 overlap_x=self.overlap_x, overlap_y=self.overlap_y, show=self.show_crops, return_crop_elements=True)
         self._detect_objects()
 
 
@@ -91,7 +92,7 @@ class MakeCropsDetectThem:
                 # Display the result:
                 if show:
                     plt.subplot(y_steps, x_steps, i * x_steps + j + 1)
-                    plt.imshow(im_temp)
+                    plt.imshow(cv2.cvtColor(im_temp.copy(), cv2.COLOR_BGR2RGB))
                     plt.axis('off')
                 count += 1
 

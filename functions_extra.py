@@ -107,7 +107,7 @@ def visualise_results(img, model, imgsz=640, conf=0.5, iou=0.7, segment=False, s
 
 
 
-def get_crops_xy(image_full, shape_x: int, shape_y: int,
+def get_crops(image_full, shape_x: int, shape_y: int,
                  overlap_x=15, overlap_y=15, show=False):
     """Preprocessing of the image. Generating crops with overlapping.
 
