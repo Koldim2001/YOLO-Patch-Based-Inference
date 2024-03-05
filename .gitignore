@@ -1,2 +1,3 @@
 test_images
 **.pt
+**__pycache__

@@ -4,7 +4,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def visualise_results(img, model, imgsz=640, conf=0.5, iou=0.7, segment=False, show_boxes=True, show_class=True, fill_mask=False, alpha=0.3, color_class_background=(0, 0, 255), color_class_text=(255, 255, 255), thickness=4, font=cv2.FONT_HERSHEY_SIMPLEX, font_scale=1.5, delta_colors=0):
+def visualise_results(img, model, imgsz=640, conf=0.5, iou=0.7, segment=False, show_boxes=True,
+     show_class=True, fill_mask=False, alpha=0.3, color_class_background=(0, 0, 255), color_class_text=(255, 255, 255),
+     thickness=4, font=cv2.FONT_HERSHEY_SIMPLEX, font_scale=1.5, delta_colors=0, dpi=150):
     """
     Visualizes the results of object detection or segmentation on an image.
 
@@ -25,6 +27,7 @@ def visualise_results(img, model, imgsz=640, conf=0.5, iou=0.7, segment=False, s
         font: The font type for class labels. Default is cv2.FONT_HERSHEY_SIMPLEX.
         font_scale (float): The scale factor for font size. Default is 1.5.
         delta_colors (int): The random seed offset for color variation. Default is 0.
+        dpi (int): Final visualisation size (plot is bigger when dpi is higher)
 
     Returns:
         None
@@ -95,8 +98,76 @@ def visualise_results(img, model, imgsz=640, conf=0.5, iou=0.7, segment=False, s
                             thickness=thickness)
 
         # Display the final image with overlaid masks and labels
-        plt.figure(figsize=(8, 8), dpi=150)
+        plt.figure(figsize=(8, 8), dpi=dpi)
         labeled_image = cv2.cvtColor(labeled_image, cv2.COLOR_BGR2RGB)
         plt.imshow(labeled_image)
         plt.axis('off')
         plt.show()
+
+
+
+
+def get_crops_xy(image_full, shape_x: int, shape_y: int,
+                 overlap_x=15, overlap_y=15, show=False):
+    """Preprocessing of the image. Generating crops with overlapping.
+
+    Args:
+        image_full (array): numpy array of an RGB image
+        
+        shape_x (int): size of the crop in the x-coordinate
+        
+        shape_y (int): size of the crop in the y-coordinate
+        
+        overlap_x (float, optional): Percentage of overlap along the x-axis
+                (how much subsequent crops borrow information from previous ones)
+
+        overlap_y (float, optional): Percentage of overlap along the y-axis
+                (how much subsequent crops borrow information from previous ones)
+
+        show (bool): enables the mode to display images using plt.imshow
+
+    """    
+    cross_koef_x = 1 - (overlap_x / 100)
+    cross_koef_y = 1 - (overlap_y / 100)
+
+    data_all_crops = []
+
+    y_steps = int((image_full.shape[0] - shape_y) / (shape_y * cross_koef_y)) + 1
+    x_steps = int((image_full.shape[1] - shape_x) / (shape_x * cross_koef_x)) + 1
+
+    y_new = round((y_steps-1) * (shape_y * cross_koef_y) + shape_y)
+    x_new = round((x_steps-1) * (shape_x * cross_koef_x) + shape_x)
+    image_full = cv2.resize(image_full, (x_new, y_new))
+
+    if show:
+        plt.figure(figsize=[x_steps*0.9, y_steps*0.9])
+
+    count = 0
+    for i in range(y_steps):
+        for j in range(x_steps):
+            x_start = int(shape_x * j * cross_koef_x)
+            y_start = int(shape_y * i * cross_koef_y)
+
+            # Check for residuals
+            if x_start + shape_x > image_full.shape[1]:
+                print('Error in generating crops along the x-axis')
+                continue
+            if y_start + shape_y > image_full.shape[0]:
+                print('Error in generating crops along the y-axis')
+                continue
+
+            im_temp = image_full[y_start:y_start + shape_y, x_start:x_start + shape_x]
+
+            # Display the result:
+            if show:
+                plt.subplot(y_steps, x_steps, i * x_steps + j + 1)
+                plt.imshow(im_temp)
+                plt.axis('off')
+            count += 1
+
+            data_all_crops.append(im_temp)
+    if show:
+        plt.show()
+        print('Number of generated images:', count)
+
+    return data_all_crops
