@@ -15,9 +15,9 @@ class CombineDetectionsNode:
         self.class_names = element_crops.class_names_dict 
         self.crops = element_crops.crops  # List to store the CropElement objects
         if element_crops.resize_results:
-            self.image = element_crops.crops[0].source_image_resized
-        else:
             self.image = element_crops.crops[0].source_image
+        else:
+            self.image = element_crops.crops[0].source_image_resized
         self.nms_iou = nms_iou  # IoU treshold for NMS
         (
             self.detected_conf_list_full,

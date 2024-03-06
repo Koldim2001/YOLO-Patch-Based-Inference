@@ -179,9 +179,9 @@ def visualize_results(
     img,
     confidences,
     boxes,
-    masks,
     classes_ids,
-    classes_names,
+    classes_names=[], 
+    masks=[],
     segment=False,
     show_boxes=True,
     show_class=True,
@@ -228,7 +228,10 @@ def visualize_results(
     # Process each prediction
     for i in range(len(confidences)):
         # Get the class for the current detection
-        class_name = str(classes_names[i])
+        if len(classes_names)>0:
+            class_name = str(classes_names[i])
+        else:
+            class_name = str(classes_ids[i])
 
         # Assign color according to class
         random.seed(int(classes_ids[i] + delta_colors))
