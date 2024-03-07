@@ -4,9 +4,27 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def visualize_results_usual_yolo_inference(img, model, imgsz=640, conf=0.5, iou=0.7, segment=False, show_boxes=True,
-     show_class=True, fill_mask=False, alpha=0.3, color_class_background=(0, 0, 255), color_class_text=(255, 255, 255),
-     thickness=4, font=cv2.FONT_HERSHEY_SIMPLEX, font_scale=1.5, delta_colors=0, dpi=150):
+def visualize_results_usual_yolo_inference(
+        img,
+        model, 
+        imgsz=640, 
+        conf=0.5, 
+        iou=0.7, 
+        segment=False, 
+        show_boxes=True,
+        show_class=True,
+        fill_mask=False, 
+        alpha=0.3, 
+        color_class_background=(0, 0, 255),
+        color_class_text=(255, 255, 255),
+        thickness=4,
+        font=cv2.FONT_HERSHEY_SIMPLEX, 
+        font_scale=1.5, 
+        delta_colors=0, 
+        dpi=150, 
+        random_object_colors=False,
+        show_confidences=False
+    ):
     """
     Visualizes the results of object detection or segmentation on an image.
 
@@ -28,6 +46,8 @@ def visualize_results_usual_yolo_inference(img, model, imgsz=640, conf=0.5, iou=
         font_scale (float): The scale factor for font size. Default is 1.5.
         delta_colors (int): The random seed offset for color variation. Default is 0.
         dpi (int): Final visualisation size (plot is bigger when dpi is higher)
+        random_object_colors (bool): If true, colors for each object select randomly
+        show_confidences (bool): If true and show_class=True, confidences near class visualized
 
     Returns:
         None
@@ -65,9 +85,12 @@ def visualize_results_usual_yolo_inference(img, model, imgsz=640, conf=0.5, iou=
             class_index = int(classes[i])
             class_name = class_names[class_index]
 
-            # Assign color according to class
-            random.seed(int(classes[i] + delta_colors))
-            color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+            if random_object_colors:
+                color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+            else:
+                # Assign color according to class
+                random.seed(int(classes[i] + delta_colors))
+                color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 
             box = boxes[i]
             x_min, y_min, x_max, y_max = box
@@ -90,10 +113,13 @@ def visualize_results_usual_yolo_inference(img, model, imgsz=640, conf=0.5, iou=
                 cv2.rectangle(labeled_image, (x_min, y_min), (x_max, y_max), color, thickness)
 
             if show_class:
-                label = str(class_name)
+                if show_confidences:
+                    label = f'{str(class_name)} {confidences[i]:.2}'
+                else:
+                    label = str(class_name)
                 (text_width, text_height), _ = cv2.getTextSize(label, font, font_scale, thickness)
                 cv2.rectangle(labeled_image, (x_min, y_min), (x_min + text_width + 5, y_min + text_height + 5),
-                              color_class_background, -1)
+                                color_class_background, -1)
                 cv2.putText(labeled_image, label, (x_min + 5, y_min + text_height), font, font_scale, color_class_text,
                             thickness=thickness)
 
@@ -193,7 +219,9 @@ def visualize_results(
     font=cv2.FONT_HERSHEY_SIMPLEX,
     font_scale=1.5,
     delta_colors=0,
-    dpi=150
+    dpi=150,
+    random_object_colors=False,
+    show_confidences=False
 ):
     """
     Visualizes the results of object detection or segmentation on an image.
@@ -217,6 +245,8 @@ def visualize_results(
         font_scale (float): The scale factor for font size. Default is 1.5.
         delta_colors (int): The random seed offset for color variation. Default is 0.
         dpi (int): Final visualization size (plot is bigger when dpi is higher). Default is 150.
+        random_object_colors (bool): If true, colors for each object select randomly
+        show_confidences (bool): If true and show_class=True, confidences near class visualized
 
     Returns:
         None
@@ -226,16 +256,19 @@ def visualize_results(
     labeled_image = img.copy()
     
     # Process each prediction
-    for i in range(len(confidences)):
+    for i in range(len(classes_ids)):
         # Get the class for the current detection
         if len(classes_names)>0:
             class_name = str(classes_names[i])
         else:
             class_name = str(classes_ids[i])
 
-        # Assign color according to class
-        random.seed(int(classes_ids[i] + delta_colors))
-        color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+        if random_object_colors:
+            color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+        else:
+            # Assign color according to class
+            random.seed(int(classes_ids[i] + delta_colors))
+            color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 
         box = boxes[i]
         x_min, y_min, x_max, y_max = box
@@ -258,7 +291,10 @@ def visualize_results(
             cv2.rectangle(labeled_image, (x_min, y_min), (x_max, y_max), color, thickness)
 
         if show_class:
-            label = str(class_name)
+            if show_confidences:
+                label = f'{str(class_name)} {confidences[i]:.2}'
+            else:
+                label = str(class_name)
             (text_width, text_height), _ = cv2.getTextSize(label, font, font_scale, thickness)
             cv2.rectangle(labeled_image, (x_min, y_min), (x_min + text_width + 5, y_min + text_height + 5),
                           color_class_background, -1)
