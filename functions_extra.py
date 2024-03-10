@@ -1,3 +1,4 @@
+import os
 import cv2
 import random
 import numpy as np
@@ -5,32 +6,33 @@ import matplotlib.pyplot as plt
 
 
 def visualize_results_usual_yolo_inference(
-        img,
-        model, 
-        imgsz=640, 
-        conf=0.5, 
-        iou=0.7, 
-        segment=False, 
-        show_boxes=True,
-        show_class=True,
-        fill_mask=False, 
-        alpha=0.3, 
-        color_class_background=(0, 0, 255),
-        color_class_text=(255, 255, 255),
-        thickness=4,
-        font=cv2.FONT_HERSHEY_SIMPLEX, 
-        font_scale=1.5, 
-        delta_colors=0, 
-        dpi=150, 
-        random_object_colors=False,
-        show_confidences=False
-    ):
+    img,
+    model,
+    imgsz=640,
+    conf=0.5,
+    iou=0.7,
+    segment=False,
+    show_boxes=True,
+    show_class=True,
+    fill_mask=False,
+    alpha=0.3,
+    color_class_background=(0, 0, 255),
+    color_class_text=(255, 255, 255),
+    thickness=4,
+    font=cv2.FONT_HERSHEY_SIMPLEX,
+    font_scale=1.5,
+    delta_colors=0,
+    dpi=150,
+    random_object_colors=False,
+    show_confidences=False,
+    axis_off=True,
+):
     """
     Visualizes the results of object detection or segmentation on an image.
 
     Args:
-        img (numpy.ndarray): The input image.
-        model: The object detection or segmentation model.
+        img (numpy.ndarray): The input image in BGR.
+        model: The object detection or segmentation model (yolov8).
         imgsz (int): The input image size for the model. Default is 640.
         conf (float): The confidence threshold for detection. Default is 0.5.
         iou (float): The intersection over union threshold for detection. Default is 0.7.
@@ -48,6 +50,7 @@ def visualize_results_usual_yolo_inference(
         dpi (int): Final visualisation size (plot is bigger when dpi is higher)
         random_object_colors (bool): If true, colors for each object select randomly
         show_confidences (bool): If true and show_class=True, confidences near class visualized
+        axis_off (bool)
 
     Returns:
         None
@@ -98,9 +101,13 @@ def visualize_results_usual_yolo_inference(
             if segment:
                 mask = masks[i]
                 # Resize mask to the size of the original image using nearest neighbor interpolation
-                mask_resized = cv2.resize(np.array(mask), (img.shape[1], img.shape[0]), interpolation=cv2.INTER_NEAREST)
+                mask_resized = cv2.resize(
+                    np.array(mask), (img.shape[1], img.shape[0]), interpolation=cv2.INTER_NEAREST
+                )
                 # Add label to the mask
-                mask_contours, _ = cv2.findContours(mask_resized.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                mask_contours, _ = cv2.findContours(
+                    mask_resized.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+                )
                 cv2.drawContours(labeled_image, mask_contours, -1, color, thickness)
 
                 if fill_mask:
@@ -118,32 +125,53 @@ def visualize_results_usual_yolo_inference(
                 else:
                     label = str(class_name)
                 (text_width, text_height), _ = cv2.getTextSize(label, font, font_scale, thickness)
-                cv2.rectangle(labeled_image, (x_min, y_min), (x_min + text_width + 5, y_min + text_height + 5),
-                                color_class_background, -1)
-                cv2.putText(labeled_image, label, (x_min + 5, y_min + text_height), font, font_scale, color_class_text,
-                            thickness=thickness)
+                cv2.rectangle(
+                    labeled_image,
+                    (x_min, y_min),
+                    (x_min + text_width + 5, y_min + text_height + 5),
+                    color_class_background,
+                    -1,
+                )
+                cv2.putText(
+                    labeled_image,
+                    label,
+                    (x_min + 5, y_min + text_height),
+                    font,
+                    font_scale,
+                    color_class_text,
+                    thickness=thickness,
+                )
 
         # Display the final image with overlaid masks and labels
         plt.figure(figsize=(8, 8), dpi=dpi)
         labeled_image = cv2.cvtColor(labeled_image, cv2.COLOR_BGR2RGB)
         plt.imshow(labeled_image)
-        plt.axis('off')
+        if axis_off:
+            plt.axis('off')
         plt.show()
 
 
-
-
-def get_crops(image_full, shape_x: int, shape_y: int,
-                 overlap_x=15, overlap_y=15, show=False):
-    """Preprocessing of the image. Generating crops with overlapping.
+def get_crops(
+    image_full,
+    shape_x: int,
+    shape_y: int,
+    overlap_x=15,
+    overlap_y=15,
+    show=False,
+    save_crops=False,
+    save_folder="crops_folder",
+    start_name="image",
+):
+    """
+    Preprocessing of the image. Generating crops with overlapping.
 
     Args:
-        image_full (array): numpy array of an RGB image
-        
+        image_full (array): numpy array of an BGR image
+
         shape_x (int): size of the crop in the x-coordinate
-        
+
         shape_y (int): size of the crop in the y-coordinate
-        
+
         overlap_x (float, optional): Percentage of overlap along the x-axis
                 (how much subsequent crops borrow information from previous ones)
 
@@ -152,7 +180,13 @@ def get_crops(image_full, shape_x: int, shape_y: int,
 
         show (bool): enables the mode to display images using plt.imshow
 
-    """    
+        save_crops (bool): enables saving generated images
+
+        save_folder (str): folder path to save the images
+
+        start_name (str): starting name for saved images
+
+    """
     cross_koef_x = 1 - (overlap_x / 100)
     cross_koef_y = 1 - (overlap_y / 100)
 
@@ -187,11 +221,19 @@ def get_crops(image_full, shape_x: int, shape_y: int,
             # Display the result:
             if show:
                 plt.subplot(y_steps, x_steps, i * x_steps + j + 1)
-                plt.imshow(im_temp)
+                plt.imshow(cv2.cvtColor(im_temp.copy(), cv2.COLOR_BGR2RGB))
                 plt.axis('off')
             count += 1
 
             data_all_crops.append(im_temp)
+
+            # Save the image
+            if save_crops:
+                if not os.path.exists(save_folder):
+                    os.makedirs(save_folder)
+                filename = f"{save_folder}/{start_name}_crop_{count}.png"
+                cv2.imwrite(filename, im_temp)
+
     if show:
         plt.show()
         print('Number of generated images:', count)
@@ -199,13 +241,11 @@ def get_crops(image_full, shape_x: int, shape_y: int,
     return data_all_crops
 
 
-
-
 def visualize_results(
     img,
-    confidences,
     boxes,
     classes_ids,
+    confidences=[],
     classes_names=[], 
     masks=[],
     segment=False,
@@ -221,13 +261,14 @@ def visualize_results(
     delta_colors=0,
     dpi=150,
     random_object_colors=False,
-    show_confidences=False
+    show_confidences=False,
+    axis_off=True,
 ):
     """
     Visualizes the results of object detection or segmentation on an image.
 
     Args:
-        img (numpy.ndarray): The input image.
+        img (numpy.ndarray): The input image in BGR.
         confidences (list): A list of confidence scores corresponding to each bounding box.
         boxes (list): A list of bounding boxes in the format [x_min, y_min, x_max, y_max].
         masks (list): A list of masks.
@@ -247,14 +288,15 @@ def visualize_results(
         dpi (int): Final visualization size (plot is bigger when dpi is higher). Default is 150.
         random_object_colors (bool): If true, colors for each object select randomly
         show_confidences (bool): If true and show_class=True, confidences near class visualized
+        axis_off (bool)
 
     Returns:
         None
     """
-    
+
     # Create a copy of the input image
     labeled_image = img.copy()
-    
+
     # Process each prediction
     for i in range(len(classes_ids)):
         # Get the class for the current detection
@@ -276,9 +318,13 @@ def visualize_results(
         if segment:
             mask = masks[i]
             # Resize mask to the size of the original image using nearest neighbor interpolation
-            mask_resized = cv2.resize(np.array(mask), (img.shape[1], img.shape[0]), interpolation=cv2.INTER_NEAREST)
+            mask_resized = cv2.resize(
+                np.array(mask), (img.shape[1], img.shape[0]), interpolation=cv2.INTER_NEAREST
+            )
             # Add label to the mask
-            mask_contours, _ = cv2.findContours(mask_resized.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            mask_contours, _ = cv2.findContours(
+                mask_resized.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+            )
             cv2.drawContours(labeled_image, mask_contours, -1, color, thickness)
 
             if fill_mask:
@@ -296,14 +342,27 @@ def visualize_results(
             else:
                 label = str(class_name)
             (text_width, text_height), _ = cv2.getTextSize(label, font, font_scale, thickness)
-            cv2.rectangle(labeled_image, (x_min, y_min), (x_min + text_width + 5, y_min + text_height + 5),
-                          color_class_background, -1)
-            cv2.putText(labeled_image, label, (x_min + 5, y_min + text_height), font, font_scale, color_class_text,
-                        thickness=thickness)
+            cv2.rectangle(
+                labeled_image,
+                (x_min, y_min),
+                (x_min + text_width + 5, y_min + text_height + 5),
+                color_class_background,
+                -1,
+            )
+            cv2.putText(
+                labeled_image,
+                label,
+                (x_min + 5, y_min + text_height),
+                font,
+                font_scale,
+                color_class_text,
+                thickness=thickness,
+            )
 
     # Display the final image with overlaid masks and labels
     plt.figure(figsize=(8, 8), dpi=dpi)
     labeled_image = cv2.cvtColor(labeled_image, cv2.COLOR_BGR2RGB)
     plt.imshow(labeled_image)
-    plt.axis('off')
+    if axis_off:
+        plt.axis('off')
     plt.show()
