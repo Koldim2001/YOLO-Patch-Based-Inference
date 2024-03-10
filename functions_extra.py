@@ -42,7 +42,7 @@ def visualize_results_usual_yolo_inference(
         show_class (bool): Whether to show class labels. Default is True.
         fill_mask (bool): Whether to fill the segmented regions with color. Default is False.
         alpha (float): The transparency of filled masks. Default is 0.3.
-        color_class_background (tuple): The background color for class labels. Default is (0, 0, 255) (blue).
+        color_class_background (tuple): The background bgr color for class labels. Default is (0, 0, 255) (red).
         color_class_text (tuple): The text color for class labels. Default is (255, 255, 255) (white).
         thickness (int): The thickness of bounding box and text. Default is 4.
         font: The font type for class labels. Default is cv2.FONT_HERSHEY_SIMPLEX.
@@ -282,7 +282,7 @@ def visualize_results(
         show_class (bool): Whether to show class labels. Default is True.
         fill_mask (bool): Whether to fill the segmented regions with color. Default is False.
         alpha (float): The transparency of filled masks. Default is 0.3.
-        color_class_background (tuple): The background color for class labels. Default is (0, 0, 255) (blue).
+        color_class_background (tuple): The background bgr color for class labels. Default is (0, 0, 255) (red).
         color_class_text (tuple): The text color for class labels. Default is (255, 255, 255) (white).
         thickness (int): The thickness of bounding box and text. Default is 4.
         font: The font type for class labels. Default is cv2.FONT_HERSHEY_SIMPLEX.
