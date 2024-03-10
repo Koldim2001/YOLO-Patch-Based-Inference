@@ -26,12 +26,13 @@ def visualize_results_usual_yolo_inference(
     random_object_colors=False,
     show_confidences=False,
     axis_off=True,
+    show_classes_list=[]
 ):
     """
-    Visualizes the results of object detection or segmentation on an image.
+    Visualizes the results of usual YOLOv8 or YOLOv8-seg inference on an image
 
     Args:
-        img (numpy.ndarray): The input image in BGR.
+        img (numpy.ndarray): The input image in BGR format.
         model: The object detection or segmentation model (yolov8).
         imgsz (int): The input image size for the model. Default is 640.
         conf (float): The confidence threshold for detection. Default is 0.5.
@@ -47,20 +48,23 @@ def visualize_results_usual_yolo_inference(
         font: The font type for class labels. Default is cv2.FONT_HERSHEY_SIMPLEX.
         font_scale (float): The scale factor for font size. Default is 1.5.
         delta_colors (int): The random seed offset for color variation. Default is 0.
-        dpi (int): Final visualisation size (plot is bigger when dpi is higher)
-        random_object_colors (bool): If true, colors for each object select randomly
-        show_confidences (bool): If true and show_class=True, confidences near class visualized
-        axis_off (bool)
+        dpi (int): Final visualization size (plot is bigger when dpi is higher).
+        random_object_colors (bool): If True, colors for each object are selected randomly.
+        show_confidences (bool): If True and show_class=True, confidences near class are visualized.
+        axis_off (bool): If True, axis is turned off in the final visualization.
+        show_classes_list (list): If empty, visualize all classes. Otherwise, visualize only classes in the list.
 
     Returns:
         None
-
     """
 
     # Perform inference
     predictions = model.predict(img, imgsz=imgsz, conf=conf, iou=iou, verbose=False)
 
     labeled_image = img.copy()
+
+    if random_object_colors:
+        random.seed(int(delta_colors))
 
     # Process each prediction
     for pred in predictions:
@@ -87,6 +91,9 @@ def visualize_results_usual_yolo_inference(
             # Get the class for the current detection
             class_index = int(classes[i])
             class_name = class_names[class_index]
+
+            if show_classes_list and class_index not in show_classes_list:
+                continue
 
             if random_object_colors:
                 color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
@@ -166,27 +173,22 @@ def get_crops(
     Preprocessing of the image. Generating crops with overlapping.
 
     Args:
-        image_full (array): numpy array of an BGR image
-
-        shape_x (int): size of the crop in the x-coordinate
-
-        shape_y (int): size of the crop in the y-coordinate
-
+        image_full (array): numpy array of a BGR image.
+        shape_x (int): size of the crop in the x-coordinate.
+        shape_y (int): size of the crop in the y-coordinate.
         overlap_x (float, optional): Percentage of overlap along the x-axis
-                (how much subsequent crops borrow information from previous ones)
-
+            (how much subsequent crops borrow information from previous ones). Default is 15.
         overlap_y (float, optional): Percentage of overlap along the y-axis
-                (how much subsequent crops borrow information from previous ones)
+            (how much subsequent crops borrow information from previous ones). Default is 15.
+        show (bool): enables the mode to display images using plt.imshow. Default is False.
+        save_crops (bool): enables saving generated images. Default is False.
+        save_folder (str): folder path to save the images. Default is "crops_folder".
+        start_name (str): starting name for saved images. Default is "image".
 
-        show (bool): enables the mode to display images using plt.imshow
-
-        save_crops (bool): enables saving generated images
-
-        save_folder (str): folder path to save the images
-
-        start_name (str): starting name for saved images
-
+    Returns:
+        data_all_crops (list): List containing cropped images.
     """
+    
     cross_koef_x = 1 - (overlap_x / 100)
     cross_koef_y = 1 - (overlap_y / 100)
 
@@ -263,17 +265,18 @@ def visualize_results(
     random_object_colors=False,
     show_confidences=False,
     axis_off=True,
+    show_classes_list=[]
 ):
     """
-    Visualizes the results of object detection or segmentation on an image.
+    Visualizes custom results of object detection or segmentation on an image.
 
     Args:
-        img (numpy.ndarray): The input image in BGR.
-        confidences (list): A list of confidence scores corresponding to each bounding box.
+        img (numpy.ndarray): The input image in BGR format.
         boxes (list): A list of bounding boxes in the format [x_min, y_min, x_max, y_max].
-        masks (list): A list of masks.
         classes_ids (list): A list of class IDs for each detection.
-        classes_names (list): A list of class names corresponding to the class IDs.
+        confidences (list): A list of confidence scores corresponding to each bounding box. Default is an empty list.
+        classes_names (list): A list of class names corresponding to the class IDs. Default is an empty list.
+        masks (list): A list of masks. Default is an empty list.
         segment (bool): Whether to perform instance segmentation. Default is False.
         show_boxes (bool): Whether to show bounding boxes. Default is True.
         show_class (bool): Whether to show class labels. Default is True.
@@ -286,9 +289,10 @@ def visualize_results(
         font_scale (float): The scale factor for font size. Default is 1.5.
         delta_colors (int): The random seed offset for color variation. Default is 0.
         dpi (int): Final visualization size (plot is bigger when dpi is higher). Default is 150.
-        random_object_colors (bool): If true, colors for each object select randomly
-        show_confidences (bool): If true and show_class=True, confidences near class visualized
-        axis_off (bool)
+        random_object_colors (bool): If true, colors for each object are selected randomly. Default is False.
+        show_confidences (bool): If true and show_class=True, confidences near class are visualized. Default is False.
+        axis_off (bool): If true, axis is turned off in the final visualization. Default is True.
+        show_classes_list (list): If empty, visualize all classes. Otherwise, visualize only classes in the list.
 
     Returns:
         None
@@ -297,6 +301,9 @@ def visualize_results(
     # Create a copy of the input image
     labeled_image = img.copy()
 
+    if random_object_colors:
+        random.seed(int(delta_colors))
+
     # Process each prediction
     for i in range(len(classes_ids)):
         # Get the class for the current detection
@@ -304,6 +311,9 @@ def visualize_results(
             class_name = str(classes_names[i])
         else:
             class_name = str(classes_ids[i])
+
+        if show_classes_list and int(classes_ids[i]) not in show_classes_list:
+            continue
 
         if random_object_colors:
             color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
