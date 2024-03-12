@@ -168,6 +168,7 @@ def get_crops(
     save_crops=False,
     save_folder="crops_folder",
     start_name="image",
+    resize=False,
 ):
     """
     Preprocessing of the image. Generating crops with overlapping.
@@ -184,6 +185,8 @@ def get_crops(
         save_crops (bool): enables saving generated images. Default is False.
         save_folder (str): folder path to save the images. Default is "crops_folder".
         start_name (str): starting name for saved images. Default is "image".
+        resize (bool): If True, the image is resized to fit the last crop exactly. 
+                       If False, the image is not resized. Default is False.
 
     Returns:
         data_all_crops (list): List containing cropped images.
@@ -197,9 +200,10 @@ def get_crops(
     y_steps = int((image_full.shape[0] - shape_y) / (shape_y * cross_koef_y)) + 1
     x_steps = int((image_full.shape[1] - shape_x) / (shape_x * cross_koef_x)) + 1
 
-    y_new = round((y_steps-1) * (shape_y * cross_koef_y) + shape_y)
-    x_new = round((x_steps-1) * (shape_x * cross_koef_x) + shape_x)
-    image_full = cv2.resize(image_full, (x_new, y_new))
+    if resize:
+        y_new = round((y_steps-1) * (shape_y * cross_koef_y) + shape_y)
+        x_new = round((x_steps-1) * (shape_x * cross_koef_x) + shape_x)
+        image_full = cv2.resize(image_full, (x_new, y_new))
 
     if show:
         plt.figure(figsize=[x_steps*0.9, y_steps*0.9])
