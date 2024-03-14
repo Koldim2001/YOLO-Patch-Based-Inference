@@ -23,8 +23,8 @@ class MakeCropsDetectThem:
         overlap_x (int): Percentage of overlap along the x-axis.
         overlap_y (int): Percentage of overlap along the y-axis.
         show_crops (bool): Whether to visualize the cropping.
-        resize_results (bool): Whether to resize the results to the original image size
-                               (ps: slow operation).
+        resize_initial_size (bool): Whether to resize the results to the original 
+                                    image size (ps: slow operation).
 
     Attributes:
         model: YOLOv8 model loaded from the specified path.
@@ -39,8 +39,8 @@ class MakeCropsDetectThem:
         overlap_y (int): Percentage of overlap along the y-axis.
         crops (list): List to store the CropElement objects.
         show_crops (bool): Whether to visualize the cropping.
-        resize_results (bool): Whether to resize the results to the original image size 
-                               (ps: slow operation).
+        resize_initial_size (bool): Whether to resize the results to the original  
+                                    image size (ps: slow operation).
         class_names_dict (dict): Dictionary containing class names of the YOLOv8 model.
     """
 
@@ -57,7 +57,7 @@ class MakeCropsDetectThem:
         overlap_x=25,
         overlap_y=25,
         show_crops=False,
-        resize_results=False,
+        resize_initial_size=False,
     ) -> None:
         self.model = YOLO(model_path)  # Load the model from the specified path
         self.image = image  # Input image
@@ -71,7 +71,7 @@ class MakeCropsDetectThem:
         self.overlap_y = overlap_y  # Percentage of overlap along the y-axis
         self.crops = []  # List to store the CropElement objects
         self.show_crops = show_crops  # Whether to visualize the cropping
-        self.resize_results = resize_results  # slow operation !
+        self.resize_initial_size = resize_initial_size  # slow operation !
         self.class_names_dict = self.model.names
 
         self.crops = self.get_crops_xy(
@@ -182,5 +182,5 @@ class MakeCropsDetectThem:
                 self.model, imgsz=self.imgsz, conf=self.conf, iou=self.iou, segment=self.segment
             )
             crop.calculate_real_values()
-            if self.resize_results:
+            if self.resize_initial_size:
                 crop.resize_results()

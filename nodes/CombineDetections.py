@@ -35,13 +35,13 @@ class CombineDetections:
     def __init__(
         self,
         element_crops: MakeCropsDetectThem,
-        nms_threshold=0.6,
-        match_metric='IOU'
+        nms_threshold=0.3,
+        match_metric='IOS'
     ) -> None:
         self.conf_treshold = element_crops.conf
         self.class_names = element_crops.class_names_dict 
         self.crops = element_crops.crops  # List to store the CropElement objects
-        if element_crops.resize_results:
+        if element_crops.resize_initial_size:
             self.image = element_crops.crops[0].source_image
         else:
             self.image = element_crops.crops[0].source_image_resized
