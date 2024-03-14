@@ -1,6 +1,6 @@
 import torch
 
-from patched_yolo_infer.nodes.MakeCropsDetectThem import MakeCropsDetectThem
+from .MakeCropsDetectThem import MakeCropsDetectThem
 
 
 class CombineDetections:

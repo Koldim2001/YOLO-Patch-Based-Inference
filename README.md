@@ -1,5 +1,8 @@
 # YOLO-Patch-Based-Detection
-YOLOv8 and YOLOv9 Large Image Detection and Segmentation 
+
+
+This library facilitates various visualizations of inference results from YOLOv8 and YOLOv9 models, 
+cropping with overlays, as well as a patch-based inference algorithm enabling detection of small objects in images. It works for both object detection and instance segmentation tasks using YOLO models.
 
 How to use:
 ```

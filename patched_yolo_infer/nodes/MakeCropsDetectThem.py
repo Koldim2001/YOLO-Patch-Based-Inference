@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from ultralytics import YOLO
 
-from patched_yolo_infer.elements.CropElement import CropElement
+from ..elements.CropElement import CropElement
 
 
 class MakeCropsDetectThem:

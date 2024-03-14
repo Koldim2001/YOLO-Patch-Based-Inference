@@ -1,5 +1,5 @@
-from patched_yolo_infer.functions_extra import visualize_results_usual_yolo_inference, get_crops, visualize_results
+from .functions_extra import visualize_results_usual_yolo_inference, get_crops, visualize_results
 
-from patched_yolo_infer.nodes.MakeCropsDetectThem import MakeCropsDetectThem
-from patched_yolo_infer.nodes.CombineDetections import CombineDetections
-from patched_yolo_infer.elements.CropElement import CropElement
+from .nodes.MakeCropsDetectThem import MakeCropsDetectThem
+from .nodes.CombineDetections import CombineDetections
+from .elements.CropElement import CropElement

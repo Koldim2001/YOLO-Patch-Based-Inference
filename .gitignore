@@ -3,3 +3,9 @@
 **__pycache__
 **crops_folder
 **ipynb_checkpoints
+patched_yolo_infer.egg-info
+dist
+setup.cfg
+.pypirc
+build
+info_how_pip_upload.txt
