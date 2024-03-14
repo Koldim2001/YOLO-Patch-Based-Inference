@@ -16,7 +16,7 @@ class CombineDetections:
         conf_treshold (float): Confidence threshold of yolov8.
         class_names (dict): Dictionary containing class names pf yolov8 model.
         crops (list): List to store the CropElement objects.
-        image (np.ndarray): Source image.
+        image (np.ndarray): Source image in BGR.
         nms_threshold (float): IoU/IoS threshold for non-maximum suppression.
         match_metric (str): Matching metric (IOU/IOS).
         detected_conf_list_full (list): List of detected confidences.
