@@ -12,11 +12,13 @@ class MakeCropsDetectThem:
     for detection/segmentation.
 
     Args:
-        image (np.ndarray): Input image.
-        model_path (str): Path to the YOLOv8 model.
-        imgsz (int): Size of the input image for inference YOLOv8.
-        conf (float): Confidence threshold for detections YOLOv8.
+        image (np.ndarray): Input image BGR.
+        model_path (str): Path to the YOLO model.
+        imgsz (int): Size of the input image for inference YOLO.
+        conf (float): Confidence threshold for detections YOLO.
         iou (float): IoU threshold for non-maximum suppression YOLOv8 of single crop.
+        classes_list (List[int] or None): List of classes to filter detections. If None, 
+                                          all classes are considered. Defaults to None.
         segment (bool): Whether to perform segmentation (YOLOv8-seg).
         shape_x (int): Size of the crop in the x-coordinate.
         shape_y (int): Size of the crop in the y-coordinate.
@@ -28,11 +30,13 @@ class MakeCropsDetectThem:
 
     Attributes:
         model: YOLOv8 model loaded from the specified path.
-        image (np.ndarray): Input image.
+        image (np.ndarray): Input image BGR.
         imgsz (int): Size of the input image for inference.
         conf (float): Confidence threshold for detections.
         iou (float): IoU threshold for non-maximum suppression.
-        segment (bool): Whether to perform segmentation.
+        classes_list (List[int] or None): List of classes to filter detections. If None, 
+                                          all classes are considered. Defaults to None.
+        segment (bool): Whether to perform segmentation (YOLOv8-seg).
         shape_x (int): Size of the crop in the x-coordinate.
         shape_y (int): Size of the crop in the y-coordinate.
         overlap_x (int): Percentage of overlap along the x-axis.
@@ -41,7 +45,7 @@ class MakeCropsDetectThem:
         show_crops (bool): Whether to visualize the cropping.
         resize_initial_size (bool): Whether to resize the results to the original  
                                     image size (ps: slow operation).
-        class_names_dict (dict): Dictionary containing class names of the YOLOv8 model.
+        class_names_dict (dict): Dictionary containing class names of the YOLO model.
     """
 
     def __init__(
@@ -51,6 +55,7 @@ class MakeCropsDetectThem:
         imgsz=640,
         conf=0.5,
         iou=0.7,
+        classes_list=None,
         segment=False,
         shape_x=700,
         shape_y=700,
@@ -64,6 +69,7 @@ class MakeCropsDetectThem:
         self.imgsz = imgsz  # Size of the input image for inference
         self.conf = conf  # Confidence threshold for detections
         self.iou = iou  # IoU threshold for non-maximum suppression
+        self.classes_list = classes_list  # Classes to detect
         self.segment = segment  # Whether to perform segmentation
         self.shape_x = shape_x  # Size of the crop in the x-coordinate
         self.shape_y = shape_y  # Size of the crop in the y-coordinate
@@ -83,7 +89,6 @@ class MakeCropsDetectThem:
             show=self.show_crops,
         )
         self._detect_objects()
-
 
     def get_crops_xy(
         self,
@@ -166,7 +171,6 @@ class MakeCropsDetectThem:
 
         return data_all_crops
 
-
     def _detect_objects(self):
         """
         Method to detect objects in each crop.
@@ -179,7 +183,12 @@ class MakeCropsDetectThem:
         """
         for crop in self.crops:
             crop.calculate_inference(
-                self.model, imgsz=self.imgsz, conf=self.conf, iou=self.iou, segment=self.segment
+                self.model,
+                imgsz=self.imgsz,
+                conf=self.conf,
+                iou=self.iou,
+                segment=self.segment,
+                classes_list=self.classes_list,
             )
             crop.calculate_real_values()
             if self.resize_initial_size:

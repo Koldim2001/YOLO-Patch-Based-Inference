@@ -78,7 +78,6 @@ class CombineDetections:
         else:
             self.filtered_masks = []
 
-
     def combinate_detections(self, crops):
         """
         Combine detections from multiple crop elements.
@@ -102,7 +101,6 @@ class CombineDetections:
             detected_cls.extend(crop.detected_cls)
 
         return detected_conf, detected_xyxy, detected_masks, detected_cls
-
 
     def nms(self, 
         confidences: list, 

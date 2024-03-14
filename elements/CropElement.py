@@ -29,14 +29,12 @@ class CropElement:
         self.detected_xyxy_real = None  # Список списков с координатами xyxy боксов в значениях от source_image_resized
         self.detected_masks_real = None # Список np массивов с масками в случае yolo-seg размером как source_image_resized
 
-    def calculate_inference(self, model, imgsz=640, conf=0.35, iou=0.7, segment=False):
+    def calculate_inference(self, model, imgsz=640, conf=0.35, iou=0.7, segment=False, classes_list=None):
         # Perform inference
 
-        predictions = model.predict(self.crop, imgsz=imgsz, conf=conf, iou=iou, verbose=False)
+        predictions = model.predict(self.crop, imgsz=imgsz, conf=conf, iou=iou, classes=classes_list, verbose=False)
 
         pred = predictions[0]
-
-        class_names = pred.names
 
         # Get the bounding boxes and convert them to a list of lists
         self.detected_xyxy = pred.boxes.xyxy.cpu().int().tolist()
@@ -50,7 +48,6 @@ class CropElement:
         if segment and len(self.detected_cls) != 0:
             # Get the masks
             self.detected_masks = pred.masks.data.cpu().numpy()
-
 
     def calculate_real_values(self):
         # Calculate real values of bboxes and masks
@@ -83,7 +80,6 @@ class CropElement:
 
                 # Append the masked image to the list of detected_masks_real
                 self.detected_masks_real.append(black_image)
-
 
     def resize_results(self):
         resized_xyxy = []
