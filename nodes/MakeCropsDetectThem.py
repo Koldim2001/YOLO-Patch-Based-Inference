@@ -1,23 +1,63 @@
 import cv2
+import numpy as np
 import matplotlib.pyplot as plt
 from ultralytics import YOLO
-import random
-import numpy as np
 
 from elements.CropElement import CropElement
 
+
 class MakeCropsDetectThem:
-    # Класс, реализующий нарезку на кропы и прогон через сеть
+    """
+    Class implementing cropping and passing crops through a neural network
+    for detection/segmentation.
+
+    Args:
+        image (np.ndarray): Input image.
+        model_path (str): Path to the YOLOv8 model.
+        imgsz (int): Size of the input image for inference YOLOv8.
+        conf (float): Confidence threshold for detections YOLOv8.
+        iou (float): IoU threshold for non-maximum suppression YOLOv8 of single crop.
+        segment (bool): Whether to perform segmentation (YOLOv8-seg).
+        shape_x (int): Size of the crop in the x-coordinate.
+        shape_y (int): Size of the crop in the y-coordinate.
+        overlap_x (int): Percentage of overlap along the x-axis.
+        overlap_y (int): Percentage of overlap along the y-axis.
+        show_crops (bool): Whether to visualize the cropping.
+        resize_results (bool): Whether to resize the results to the original image size
+                               (ps: slow operation).
+
+    Attributes:
+        model: YOLOv8 model loaded from the specified path.
+        image (np.ndarray): Input image.
+        imgsz (int): Size of the input image for inference.
+        conf (float): Confidence threshold for detections.
+        iou (float): IoU threshold for non-maximum suppression.
+        segment (bool): Whether to perform segmentation.
+        shape_x (int): Size of the crop in the x-coordinate.
+        shape_y (int): Size of the crop in the y-coordinate.
+        overlap_x (int): Percentage of overlap along the x-axis.
+        overlap_y (int): Percentage of overlap along the y-axis.
+        crops (list): List to store the CropElement objects.
+        show_crops (bool): Whether to visualize the cropping.
+        resize_results (bool): Whether to resize the results to the original image size 
+                               (ps: slow operation).
+        class_names_dict (dict): Dictionary containing class names of the YOLOv8 model.
+    """
+
     def __init__(
         self,
         image: np.ndarray,
-        model_path='yolov8m.pt',
-        imgsz=640, conf=0.5, iou=0.7, 
-        segment=False, 
-        shape_x=700, shape_y=700,
-        overlap_x=25, overlap_y=25, 
+        model_path="yolov8m.pt",
+        imgsz=640,
+        conf=0.5,
+        iou=0.7,
+        segment=False,
+        shape_x=700,
+        shape_y=700,
+        overlap_x=25,
+        overlap_y=25,
         show_crops=False,
-        resize_results=False
+        resize_results=False,
     ) -> None:
         self.model = YOLO(model_path)  # Load the model from the specified path
         self.image = image  # Input image
@@ -30,19 +70,30 @@ class MakeCropsDetectThem:
         self.overlap_x = overlap_x  # Percentage of overlap along the x-axis
         self.overlap_y = overlap_y  # Percentage of overlap along the y-axis
         self.crops = []  # List to store the CropElement objects
-        self.show_crops = show_crops  # нужно ли делать визуализацию нарезки кропов
-        self.resize_results = resize_results  # нужно ли делать приведение к исходным размерам изображения (медленная опреация)
+        self.show_crops = show_crops  # Whether to visualize the cropping
+        self.resize_results = resize_results  # slow operation !
         self.class_names_dict = self.model.names
 
-        self.crops = self.get_crops_xy(self.image, shape_x=self.shape_x, shape_y=self.shape_y,
-                 overlap_x=self.overlap_x, overlap_y=self.overlap_y, show=self.show_crops, return_crop_elements=True)
+        self.crops = self.get_crops_xy(
+            self.image,
+            shape_x=self.shape_x,
+            shape_y=self.shape_y,
+            overlap_x=self.overlap_x,
+            overlap_y=self.overlap_y,
+            show=self.show_crops,
+        )
         self._detect_objects()
 
 
-
-        
-    def get_crops_xy(self, image_full, shape_x: int, shape_y: int,
-                 overlap_x=15, overlap_y=15, show=False, return_crop_elements=False):
+    def get_crops_xy(
+        self,
+        image_full,
+        shape_x: int,
+        shape_y: int,
+        overlap_x=25,
+        overlap_y=25,
+        show=False,
+    ):
         """Preprocessing of the image. Generating crops with overlapping.
 
         Args:
@@ -100,17 +151,15 @@ class MakeCropsDetectThem:
                     plt.axis('off')
                 count += 1
 
-                if return_crop_elements:
-                    data_all_crops.append(CropElement(
-                                            source_image=image_innitial,
-                                            source_image_resized=image_full,
-                                            crop=im_temp,
-                                            number_of_crop=count,
-                                            x_start=x_start,
-                                            y_start=y_start,
-                    ))
-                else:
-                    data_all_crops.append(im_temp)
+                data_all_crops.append(CropElement(
+                                        source_image=image_innitial,
+                                        source_image_resized=image_full,
+                                        crop=im_temp,
+                                        number_of_crop=count,
+                                        x_start=x_start,
+                                        y_start=y_start,
+                ))
+
         if show:
             plt.show()
             print('Number of generated images:', count)
@@ -119,8 +168,19 @@ class MakeCropsDetectThem:
 
 
     def _detect_objects(self):
+        """
+        Method to detect objects in each crop.
+
+        This method iterates through each crop, performs inference using the YOLO model,
+        calculates real values, and optionally resizes the results.
+
+        Returns:
+            None
+        """
         for crop in self.crops:
-            crop.calculate_inference(self.model, imgsz=self.imgsz, conf=self.conf, iou=self.iou, segment=self.segment)
+            crop.calculate_inference(
+                self.model, imgsz=self.imgsz, conf=self.conf, iou=self.iou, segment=self.segment
+            )
             crop.calculate_real_values()
             if self.resize_results:
                 crop.resize_results()

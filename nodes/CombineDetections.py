@@ -1,42 +1,41 @@
-import cv2
-import numpy as np
 import torch
-from elements.CropElement import CropElement
+
 from nodes.MakeCropsDetectThem import MakeCropsDetectThem
 
-class CombineDetectionsNode:
+
+class CombineDetections:
     """
-    Class implementing slicing into crops and passing them through a network.
+    Class implementing combining masks/boxes from multiple crops + NMS (Non-Maximum Suppression).
 
     Args:
         element_crops (MakeCropsDetectThem): Object containing crop information.
-        nms_iou (float): IoU threshold for non-maximum suppression.
+        nms_threshold (float): IoU/IoS threshold for non-maximum suppression.
         match_metric (str): Matching metric, either 'IOU' or 'IOS'.
 
     Attributes:
-        conf_treshold (float): Confidence threshold.
-        class_names (dict): Dictionary containing class names.
+        conf_treshold (float): Confidence threshold of yolov8.
+        class_names (dict): Dictionary containing class names pf yolov8 model.
         crops (list): List to store the CropElement objects.
         image (np.ndarray): Source image.
-        nms_iou (float): IoU threshold for non-maximum suppression.
-        match_metric (str): Matching metric.
+        nms_threshold (float): IoU/IoS threshold for non-maximum suppression.
+        match_metric (str): Matching metric (IOU/IOS).
         detected_conf_list_full (list): List of detected confidences.
         detected_xyxy_list_full (list): List of detected bounding boxes.
         detected_masks_list_full (list): List of detected masks.
         detected_cls_id_list_full (list): List of detected class IDs.
         detected_cls_names_list_full (list): List of detected class names.
         filtered_indices (list): List of indices after non-maximum suppression.
-        filtered_confidences (list): List of filtered confidences.
-        filtered_boxes (list): List of filtered bounding boxes.
-        filtered_classes_id (list): List of filtered class IDs.
-        filtered_classes_names (list): List of filtered class names.
-        filtered_masks (list): List of filtered masks if segmentation is enabled.
+        filtered_confidences (list): List of confidences after non-maximum suppression.
+        filtered_boxes (list): List of bounding boxes after non-maximum suppression.
+        filtered_classes_id (list): List of class IDs after non-maximum suppression.
+        filtered_classes_names (list): List of class names after non-maximum suppression.
+        filtered_masks (list): List of filtered (after nms) masks if segmentation is enabled.
     """
 
     def __init__(
         self,
         element_crops: MakeCropsDetectThem,
-        nms_iou=0.6,
+        nms_threshold=0.6,
         match_metric='IOU'
     ) -> None:
         self.conf_treshold = element_crops.conf
@@ -46,8 +45,8 @@ class CombineDetectionsNode:
             self.image = element_crops.crops[0].source_image
         else:
             self.image = element_crops.crops[0].source_image_resized
-       
-        self.nms_iou = nms_iou  # IoU treshold for NMS
+
+        self.nms_threshold = nms_threshold  # IoU treshold for NMS
         self.match_metric = match_metric
         (
             self.detected_conf_list_full,
@@ -56,14 +55,16 @@ class CombineDetectionsNode:
             self.detected_cls_id_list_full
         ) = self.combinate_detections(crops=self.crops)
 
-        self.detected_cls_names_list_full = [self.class_names[value] for value in self.detected_cls_id_list_full] # make str list
+        self.detected_cls_names_list_full = [
+            self.class_names[value] for value in self.detected_cls_id_list_full
+        ]  # make str list
 
         # Invoke the NMS method for filtering predictions
         self.filtered_indices = self.nms(
             self.detected_conf_list_full,
             self.detected_xyxy_list_full,
             self.match_metric, 
-            self.nms_iou
+            self.nms_threshold
         )
 
         # Apply filtering to the prediction lists
@@ -77,7 +78,7 @@ class CombineDetectionsNode:
         else:
             self.filtered_masks = []
 
-        
+
     def combinate_detections(self, crops):
         """
         Combine detections from multiple crop elements.
@@ -102,11 +103,12 @@ class CombineDetectionsNode:
 
         return detected_conf, detected_xyxy, detected_masks, detected_cls
 
+
     def nms(self, 
         confidences: list, 
         boxes: list, 
         match_metric,
-        iou_threshold,
+        nms_threshold,
     ):
         """
         Apply non-maximum suppression to avoid detecting too many
@@ -116,7 +118,7 @@ class CombineDetectionsNode:
             confidences (list): List of confidence scores.
             boxes (list): List of bounding boxes.
             match_metric (str): Matching metric, either 'IOU' or 'IOS'.
-            iou_threshold (float): The overlap threshold for match metric.
+            nms_threshold (float): The threshold for match metric.
 
         Returns:
             list: List of filtered indexes.
@@ -212,8 +214,8 @@ class CombineDetectionsNode:
             else:
                 raise ValueError("Unknown matching metric")
 
-            # Keep the boxes with IoU less than threshold
-            mask = match_metric_value < iou_threshold
+            # Keep the boxes with IoU/IoS less than threshold
+            mask = match_metric_value < nms_threshold
             order = order[mask]
 
         return keep
