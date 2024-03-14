@@ -11,7 +11,7 @@ class CropElement:
         crop: np.ndarray,
         number_of_crop: int,
         x_start: int,
-        y_start: int,
+        y_start: int
     ) -> None:
         self.source_image = source_image  # Исходное изображение 
         self.source_image_resized = source_image_resized  # Исходное изображение (ресайзнутое до кратного размера кропам)
@@ -24,6 +24,7 @@ class CropElement:
         self.detected_cls = None  # Список классов задетектированных объектов
         self.detected_xyxy = None  # Список списков с координатами xyxy боксов
         self.detected_masks = None # Список np массивов с масками в случае yolo-seg
+        
         # Уточненные координаты согласноинформации о полодении кропа
         self.detected_xyxy_real = None  # Список списков с координатами xyxy боксов в значениях от source_image_resized
         self.detected_masks_real = None # Список np массивов с масками в случае yolo-seg размером как source_image_resized

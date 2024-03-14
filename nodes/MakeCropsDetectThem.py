@@ -17,7 +17,7 @@ class MakeCropsDetectThem:
         shape_x=700, shape_y=700,
         overlap_x=25, overlap_y=25, 
         show_crops=False,
-        resize_results=False,
+        resize_results=False
     ) -> None:
         self.model = YOLO(model_path)  # Load the model from the specified path
         self.image = image  # Input image
@@ -32,7 +32,6 @@ class MakeCropsDetectThem:
         self.crops = []  # List to store the CropElement objects
         self.show_crops = show_crops  # нужно ли делать визуализацию нарезки кропов
         self.resize_results = resize_results  # нужно ли делать приведение к исходным размерам изображения (медленная опреация)
-
         self.class_names_dict = self.model.names
 
         self.crops = self.get_crops_xy(self.image, shape_x=self.shape_x, shape_y=self.shape_y,
