@@ -9,3 +9,4 @@ setup.cfg
 .pypirc
 build
 info_how_pip_upload.txt
+**.ipynb
