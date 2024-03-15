@@ -8,9 +8,8 @@ with codecs.open(os.path.join(pwd, "README.md"), encoding="utf-8") as fh:
     long_description = "\n" + fh.read()
 
 
-VERSION = '0.0.4'
-DESCRIPTION = 'YOLO-Patch-Based-Detection'
-LONG_DESCRIPTION = '''This library facilitates various visualizations of inference results from YOLOv8 and YOLOv9 models, 
+VERSION = '0.0.5'
+DESCRIPTION = '''This library facilitates various visualizations of inference results from YOLOv8 and YOLOv9 models, 
     cropping with overlays, as well as a patch-based inference algorithm enabling detection of small objects in images. 
     It works for both object detection and instance segmentation tasks using YOLO models.'''
 
