@@ -20,7 +20,7 @@ pip install patched_yolo_infer
 Interactive notebooks are provided to showcase the functionality of the library. These notebooks cover batch-inference procedures for detection, instance segmentation, inference custom visualization, and more. Each notebook is paired with a tutorial on YouTube, making it easy to learn and implement features.
 
 
-| Topic | Notebook | YouTube |
+| **Topic** | **Notebook** | **YouTube** |
 | ----- | -------- | ------- |
 | [YOLO-Patch-Based-Inference Example](https://github.com/Koldim2001/YOLO-Patch-Based-Inference/blob/main/examples/example_patch_based_inference.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/2.ipynb) | <p align="center"><a href="https://youtu.be"><img width=30% src="https://raw.githubusercontent.com/ultralytics/assets/main/social/logo-social-youtube-rect.png" alt="Youtube Video"></a></p> |
 | [Example of using various functions for visualizing basic YOLOv8/v9 inference results and handling overlapping crops](https://github.com/Koldim2001/YOLO-Patch-Based-Inference/blob/main/examples/example_extra_functions.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/1.ipynb) | <p align="center"><a href="https://youtu.be"><img width=30% src="https://raw.githubusercontent.com/ultralytics/assets/main/social/logo-social-youtube-rect.png" alt="Youtube Video"></a></p> |

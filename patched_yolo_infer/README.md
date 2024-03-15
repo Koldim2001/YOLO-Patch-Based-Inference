@@ -12,14 +12,14 @@ pip install patched_yolo_infer
 
 ## Notebooks
 
-Interactive notebooks are provided to showcase the functionality of the library. These notebooks cover batch-inference procedures for detection, instance segmentation, inference custom visualization, and more. Each notebook is paired with a tutorial on YouTube, making it easy to learn and implement features.
+Interactive notebooks are provided to showcase the functionality of the library. These notebooks cover batch inference procedures for detection, instance segmentation, custom visualization of inference, and more. Each notebook is paired with a tutorial on YouTube, making it easy to learn and implement features. Check the GitHub page for the current links to the videos: https://github.com/Koldim2001/YOLO-Patch-Based-Inference
 
-
+__Check this Colab examples:__
                          
-| Tipic | Notebook |
-| ------ | ------ |
-| [YOLO-Patch-Based-Inference Example](https://github.com/Koldim2001/YOLO-Patch-Based-Inference/blob/main/examples/example_patch_based_inference.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/2.ipynb) |
-| [Example of using various functions for visualizing basic YOLOv8/v9 inference results and handling overlapping crops](https://github.com/Koldim2001/YOLO-Patch-Based-Inference/blob/main/examples/example_extra_functions.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/1.ipynb) |
+YOLO-Patch-Based-Inference Example - [Open in Colab](https://colab.research.google.com/2.ipynb)
+
+Example of using various functions for visualizing basic YOLOv8/v9 inference results and handling overlapping crops - [Open in Colab](https://colab.research.google.com/1.ipynb)
+
 
 
 ## Usage
@@ -72,40 +72,70 @@ classes_ids=result.filtered_classes_id
 classes_names=result.filtered_classes_names
 ```
 
+#### Explanation of possible input arguments:
 
+**MakeCropsDetectThem**
+Class implementing cropping and passing crops through a neural network for detection/segmentation.\
+**Args:**
+- **image** (*np.ndarray*): Input image BGR.
+- **model_path** (*str*): Path to the YOLO model.
+- **imgsz** (*int*): Size of the input image for inference YOLO.
+- **conf** (*float*): Confidence threshold for detections YOLO.
+- **iou** (*float*): IoU threshold for non-maximum suppression YOLOv8 of single crop.
+- **classes_list** (*List[int] or None*): List of classes to filter detections. If None, all classes are considered. Defaults to None.
+- **segment** (*bool*): Whether to perform segmentation (YOLOv8-seg).
+- **shape_x** (*int*): Size of the crop in the x-coordinate.
+- **shape_y** (*int*): Size of the crop in the y-coordinate.
+- **overlap_x** (*int*): Percentage of overlap along the x-axis.
+- **overlap_y** (*int*): Percentage of overlap along the y-axis.
+- **show_crops** (*bool*): Whether to visualize the cropping.
+- **resize_initial_size** (*bool*): Whether to resize the results to the original image size (ps: slow operation).
+
+**CombineDetections**
+Class implementing combining masks/boxes from multiple crops + NMS (Non-Maximum Suppression).\
+**Args:**
+- **element_crops** (*MakeCropsDetectThem*): Object containing crop information.
+- **nms_threshold** (*float*): IoU/IoS threshold for non-maximum suppression.
+- **match_metric** (*str*): Matching metric, either 'IOU' or 'IOS'.
+
+
+
+---
 ### 2. Custom inference visualization:
 Visualizes custom results of object detection or segmentation on an image.
 
-    Args:
-        img (numpy.ndarray): The input image in BGR format.
-        boxes (list): A list of bounding boxes in the format [x_min, y_min, x_max, y_max].
-        classes_ids (list): A list of class IDs for each detection.
-        confidences (list): A list of confidence scores corresponding to each bounding box. Default is an empty list.
-        classes_names (list): A list of class names corresponding to the class IDs. Default is an empty list.
-        masks (list): A list of masks. Default is an empty list.
-        segment (bool): Whether to perform instance segmentation. Default is False.
-        show_boxes (bool): Whether to show bounding boxes. Default is True.
-        show_class (bool): Whether to show class labels. Default is True.
-        fill_mask (bool): Whether to fill the segmented regions with color. Default is False.
-        alpha (float): The transparency of filled masks. Default is 0.3.
-        color_class_background (tuple): The background bgr color for class labels. Default is (0, 0, 255) (red).
-        color_class_text (tuple): The text color for class labels. Default is (255, 255, 255) (white).
-        thickness (int): The thickness of bounding box and text. Default is 4.
-        font: The font type for class labels. Default is cv2.FONT_HERSHEY_SIMPLEX.
-        font_scale (float): The scale factor for font size. Default is 1.5.
-        delta_colors (int): The random seed offset for color variation. Default is 0.
-        dpi (int): Final visualization size (plot is bigger when dpi is higher). Default is 150.
-        random_object_colors (bool): If true, colors for each object are selected randomly. Default is False.
-        show_confidences (bool): If true and show_class=True, confidences near class are visualized. Default is False.
-        axis_off (bool): If true, axis is turned off in the final visualization. Default is True.
-        show_classes_list (list): If empty, visualize all classes. Otherwise, visualize only classes in the list.
+**Args:**
+- **img** (*numpy.ndarray*): The input image in BGR format.
+- **boxes** (*list*): A list of bounding boxes in the format [x_min, y_min, x_max, y_max].
+- **classes_ids** (*list*): A list of class IDs for each detection.
+- **confidences** (*list*): A list of confidence scores corresponding to each bounding box. Default is an empty list.
+- **classes_names** (*list*): A list of class names corresponding to the class IDs. Default is an empty list.
+- **masks** (*list*): A list of masks. Default is an empty list.
+- **segment** (*bool*): Whether to perform instance segmentation. Default is False.
+- **show_boxes** (*bool*): Whether to show bounding boxes. Default is True.
+- **show_class** (*bool*): Whether to show class labels. Default is True.
+- **fill_mask** (*bool*): Whether to fill the segmented regions with color. Default is False.
+- **alpha** (*float*): The transparency of filled masks. Default is 0.3.
+- **color_class_background** (*tuple*): The background BGR color for class labels. Default is (0, 0, 255) (red).
+- **color_class_text** (*tuple*): The text color for class labels. Default is (255, 255, 255) (white).
+- **thickness** (*int*): The thickness of bounding box and text. Default is 4.
+- **font**: The font type for class labels. Default is cv2.FONT_HERSHEY_SIMPLEX.
+- **font_scale** (*float*): The scale factor for font size. Default is 1.5.
+- **delta_colors** (*int*): The random seed offset for color variation. Default is 0.
+- **dpi** (*int*): Final visualization size (plot is bigger when dpi is higher). Default is 150.
+- **random_object_colors** (*bool*): If true, colors for each object are selected randomly. Default is False.
+- **show_confidences** (*bool*): If true and show_class=True, confidences near class are visualized. Default is False.
+- **axis_off** (*bool*): If true, axis is turned off in the final visualization. Default is True.
+- **show_classes_list** (*list*): If empty, visualize all classes. Otherwise, visualize only classes in the list.
+
+
 
 Example of using:
 ```python
 from patched_yolo_infer import visualize_results
 
 # Assuming result is an instance of the CombineDetections class
-result = CombineDetections(...)  # Instance creation code here
+result = CombineDetections(...) 
 
 # Visualizing the results using the visualize_results function
 visualize_results(

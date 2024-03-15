@@ -4,14 +4,12 @@ import os
 
 pwd = os.path.abspath(os.path.dirname(__file__))
 
-with codecs.open(os.path.join(pwd, "README.md"), encoding="utf-8") as fh:
+with codecs.open(os.path.join(pwd, "patched_yolo_infer/README.md"), encoding="utf-8") as fh:
     long_description = "\n" + fh.read()
 
 
-VERSION = '0.0.5'
-DESCRIPTION = '''This library facilitates various visualizations of inference results from YOLOv8 and YOLOv9 models, 
-    cropping with overlays, as well as a patch-based inference algorithm enabling detection of small objects in images. 
-    It works for both object detection and instance segmentation tasks using YOLO models.'''
+VERSION = '1.0.1'
+DESCRIPTION = '''YOLO-Patch-Based-Inference for detection/segmentation of small objects in images.'''
 
 setup(
     name="patched_yolo_infer",
@@ -19,7 +17,6 @@ setup(
     license="MIT",
     url="https://github.com/Koldim2001/YOLO-Patch-Based-Inference",
     author="Koldim2001",
-    author_email="koldim2001@yandex.ru",
     description=DESCRIPTION,
     long_description=long_description,
     long_description_content_type="text/markdown",
