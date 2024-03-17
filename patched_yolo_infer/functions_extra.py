@@ -84,7 +84,10 @@ def visualize_results_usual_yolo_inference(
 
         if segment:
             # Get the masks
-            masks = pred.masks.data.cpu().numpy()
+            try:
+                masks = pred.masks.data.cpu().numpy()
+            except:
+                masks = []
 
         # Visualization
         for i in range(num_objects):
