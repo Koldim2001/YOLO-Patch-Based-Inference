@@ -1,6 +1,8 @@
 # YOLO-Patch-Based-Inference
-This library facilitates various visualizations of inference results from YOLOv8 and YOLOv9 models, cropping with overlays, as well as a __patch-based inference algorithm enabling detection of small objects in images__. It works for both object detection and instance segmentation tasks using YOLO models.
 
+This library facilitates various visualizations of inference results from ultralytics segmentation/detection models, including cropping with overlays, as well as **a patch-based inference algorithm enabling the detection of small objects in images**. It caters to both object detection and instance segmentation tasks.
+
+**Model Support**: The library offers support for multiple ultralytics deep learning models, such as YOLOv8, YOLOv9, SAM, and RTDETR. Users can select from pre-trained options or utilize custom-trained models to best meet their task requirements.
 ## Installation
 You can install the library via pip:
 
@@ -79,6 +81,7 @@ Class implementing cropping and passing crops through a neural network for detec
 **Args:**
 - **image** (*np.ndarray*): Input image BGR.
 - **model_path** (*str*): Path to the YOLO model.
+- **model** (*ultralytics model*) Pre-initialized model object. If provided, the model will be used directly instead of loading from model_path.
 - **imgsz** (*int*): Size of the input image for inference YOLO.
 - **conf** (*float*): Confidence threshold for detections YOLO.
 - **iou** (*float*): IoU threshold for non-maximum suppression YOLOv8 of single crop.

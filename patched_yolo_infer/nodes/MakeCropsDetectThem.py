@@ -27,6 +27,8 @@ class MakeCropsDetectThem:
         show_crops (bool): Whether to visualize the cropping.
         resize_initial_size (bool): Whether to resize the results to the original 
                                     image size (ps: slow operation).
+        model: Pre-initialized model object. If provided, the model will be used directly 
+                   instead of loading from model_path.
 
     Attributes:
         model: YOLOv8 model loaded from the specified path.
@@ -63,8 +65,12 @@ class MakeCropsDetectThem:
         overlap_y=25,
         show_crops=False,
         resize_initial_size=False,
+        model=None,
     ) -> None:
-        self.model = YOLO(model_path)  # Load the model from the specified path
+        if model is None:
+            self.model = YOLO(model_path)  # Load the model from the specified path
+        else:
+            self.model = model
         self.image = image  # Input image
         self.imgsz = imgsz  # Size of the input image for inference
         self.conf = conf  # Confidence threshold for detections
