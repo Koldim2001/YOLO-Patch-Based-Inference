@@ -1,5 +1,8 @@
 # YOLO-Patch-Based-Inference
-This library facilitates various visualizations of inference results from YOLOv8 and YOLOv9 models, cropping with overlays, as well as a __patch-based inference algorithm enabling detection of small objects in images__. It works for both object detection and instance segmentation tasks using YOLO models.
+
+This library facilitates various visualizations of inference results from ultralytics segmentation/detection models, including cropping with overlays, as well as **a patch-based inference algorithm enabling the detection of small objects in images**. It caters to both object detection and instance segmentation tasks.
+
+**Model Support**: The library offers support for multiple ultralytics deep learning models, such as YOLOv8, YOLOv9, SAM, and RTDETR. Users can select from pre-trained options or utilize custom-trained models to best meet their task requirements.
 
 ## Installation
 You can install the library via pip:
@@ -22,11 +25,23 @@ Interactive notebooks are provided to showcase the functionality of the library.
 
 | **Topic** | **Notebook** | **YouTube** |
 | ----- | -------- | ------- |
-| [YOLO-Patch-Based-Inference Example](https://github.com/Koldim2001/YOLO-Patch-Based-Inference/blob/main/examples/example_patch_based_inference.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1FUao91GyB-ojGRN_okUxYyfagTT9tdsP?usp=sharing) | <p align="center"><a href="https://youtu.be"><img width=30% src="https://raw.githubusercontent.com/ultralytics/assets/main/social/logo-social-youtube-rect.png" alt="Youtube Video"></a></p> |
-| [Example of using various functions for visualizing basic YOLOv8/v9 inference results and handling overlapping crops](https://github.com/Koldim2001/YOLO-Patch-Based-Inference/blob/main/examples/example_extra_functions.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1eM4o1e0AUQrS1mLDpcgK9HKInWEvnaMn?usp=sharing) | <p align="center"><a href="https://youtu.be"><img width=30% src="https://raw.githubusercontent.com/ultralytics/assets/main/social/logo-social-youtube-rect.png" alt="Youtube Video"></a></p> |
+| [YOLO-Patch-Based-Inference Example](https://nbviewer.org/github/Koldim2001/YOLO-Patch-Based-Inference/blob/main/examples/example_patch_based_inference.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1FUao91GyB-ojGRN_okUxYyfagTT9tdsP?usp=sharing) | <p align="center"><a href="https://youtu.be"><img width=30% src="https://raw.githubusercontent.com/ultralytics/assets/main/social/logo-social-youtube-rect.png" alt="Youtube Video"></a></p> |
+| [Example of using various functions for visualizing basic YOLOv8/v9 inference results and handling overlapping crops](https://nbviewer.org/github/Koldim2001/YOLO-Patch-Based-Inference/blob/main/examples/example_extra_functions.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1eM4o1e0AUQrS1mLDpcgK9HKInWEvnaMn?usp=sharing) | <p align="center"><a href="https://youtu.be"><img width=30% src="https://raw.githubusercontent.com/ultralytics/assets/main/social/logo-social-youtube-rect.png" alt="Youtube Video"></a></p> |
 
 
 For Russian users, there is a detailed video presentation of this project. YouTube videos in Russian are available at this [__link__](https://www.youtube.com/channel/UCJG413_ZLkiE5f_OMyGv5KQ).
+
+---
+## Examples:
+
+#### Detection example:
+<img src="readme_content/getection.gif" alt="Detection" width="800">
+
+#### Instance Segmentation example 1:
+<img src="readme_content/segment_1.gif" alt="Segmentation" width="800">
+
+#### Instance Segmentation example 2:
+<img src="readme_content/segment_2.gif" alt="Segmentation" width="800">
 
 ---
 ## Usage
@@ -40,7 +55,7 @@ The output obtained from the process includes several attributes that can be lev
 
 2. confidences: This attribute holds the confidence scores associated with each detected object. These scores indicate the model's confidence level in the accuracy of its predictions.
 
-3. boxes: These bounding boxes are represented as a list of tuples, where each tuple contains four values: (x_min, y_min, x_max, y_max). These values correspond to the coordinates of the top-left and bottom-right corners of each bounding box.
+3. boxes: These bounding boxes are represented as a list of lists, where each list contains four values: [x_min, y_min, x_max, y_max]. These values correspond to the coordinates of the top-left and bottom-right corners of each bounding box.
 
 4. masks: If available, this attribute provides segmentation masks corresponding to the detected objects. These masks can be used to precisely delineate object boundaries.
 
@@ -86,6 +101,7 @@ Class implementing cropping and passing crops through a neural network for detec
 **Args:**
 - **image** (*np.ndarray*): Input image BGR.
 - **model_path** (*str*): Path to the YOLO model.
+- **model** (*ultralytics model*) Pre-initialized model object. If provided, the model will be used directly instead of loading from model_path.
 - **imgsz** (*int*): Size of the input image for inference YOLO.
 - **conf** (*float*): Confidence threshold for detections YOLO.
 - **iou** (*float*): IoU threshold for non-maximum suppression YOLOv8 of single crop.
@@ -93,8 +109,8 @@ Class implementing cropping and passing crops through a neural network for detec
 - **segment** (*bool*): Whether to perform segmentation (YOLOv8-seg).
 - **shape_x** (*int*): Size of the crop in the x-coordinate.
 - **shape_y** (*int*): Size of the crop in the y-coordinate.
-- **overlap_x** (*int*): Percentage of overlap along the x-axis.
-- **overlap_y** (*int*): Percentage of overlap along the y-axis.
+- **overlap_x** (*float*): Percentage of overlap along the x-axis.
+- **overlap_y** (*float*): Percentage of overlap along the y-axis.
 - **show_crops** (*bool*): Whether to visualize the cropping.
 - **resize_initial_size** (*bool*): Whether to resize the results to the original image size (ps: slow operation).
 
@@ -128,7 +144,7 @@ Visualizes custom results of object detection or segmentation on an image.
 - **thickness** (*int*): The thickness of bounding box and text. Default is 4.
 - **font**: The font type for class labels. Default is cv2.FONT_HERSHEY_SIMPLEX.
 - **font_scale** (*float*): The scale factor for font size. Default is 1.5.
-- **delta_colors** (*int*): The random seed offset for color variation. Default is 0.
+- **delta_colors** (*int*): The random seed offset for color variation. Default is seed=0.
 - **dpi** (*int*): Final visualization size (plot is bigger when dpi is higher). Default is 150.
 - **random_object_colors** (*bool*): If true, colors for each object are selected randomly. Default is False.
 - **show_confidences** (*bool*): If true and show_class=True, confidences near class are visualized. Default is False.

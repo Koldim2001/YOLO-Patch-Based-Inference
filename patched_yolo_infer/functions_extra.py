@@ -84,7 +84,10 @@ def visualize_results_usual_yolo_inference(
 
         if segment:
             # Get the masks
-            masks = pred.masks.data.cpu().numpy()
+            try:
+                masks = pred.masks.data.cpu().numpy()
+            except:
+                masks = []
 
         # Visualization
         for i in range(num_objects):
@@ -115,12 +118,13 @@ def visualize_results_usual_yolo_inference(
                 mask_contours, _ = cv2.findContours(
                     mask_resized.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
                 )
-                cv2.drawContours(labeled_image, mask_contours, -1, color, thickness)
-
+                
                 if fill_mask:
                     color_mask = np.zeros_like(img)
                     color_mask[mask_resized > 0] = color
                     labeled_image = cv2.addWeighted(labeled_image, 1, color_mask, alpha, 0)
+
+                cv2.drawContours(labeled_image, mask_contours, -1, color, thickness)
 
             # Write class label
             if show_boxes:
@@ -339,12 +343,13 @@ def visualize_results(
             mask_contours, _ = cv2.findContours(
                 mask_resized.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
             )
-            cv2.drawContours(labeled_image, mask_contours, -1, color, thickness)
-
+            
             if fill_mask:
                 color_mask = np.zeros_like(img)
                 color_mask[mask_resized > 0] = color
                 labeled_image = cv2.addWeighted(labeled_image, 1, color_mask, alpha, 0)
+
+            cv2.drawContours(labeled_image, mask_contours, -1, color, thickness)
 
         # Write class label
         if show_boxes:

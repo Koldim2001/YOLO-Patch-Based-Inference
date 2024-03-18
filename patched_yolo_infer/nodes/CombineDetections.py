@@ -121,6 +121,8 @@ class CombineDetections:
         Returns:
             list: List of filtered indexes.
         """
+        if len(boxes) == 0:
+            return []
 
         # Convert lists to tensors
         boxes = torch.tensor(boxes)
