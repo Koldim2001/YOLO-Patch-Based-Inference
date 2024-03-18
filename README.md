@@ -32,6 +32,18 @@ Interactive notebooks are provided to showcase the functionality of the library.
 For Russian users, there is a detailed video presentation of this project. YouTube videos in Russian are available at this [__link__](https://www.youtube.com/channel/UCJG413_ZLkiE5f_OMyGv5KQ).
 
 ---
+## Examples:
+
+#### Detection example:
+<img src="readme_content/getection.gif" alt="Detection" width="800">
+
+#### Instance Segmentation example 1:
+<img src="readme_content/segment_1.gif" alt="Segmentation" width="800">
+
+#### Instance Segmentation example 2:
+<img src="readme_content/segment_2.gif" alt="Segmentation" width="800">
+
+---
 ## Usage
 
 ### 1. Patch-Based-Inference
