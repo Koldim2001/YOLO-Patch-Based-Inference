@@ -26,7 +26,8 @@ def visualize_results_usual_yolo_inference(
     random_object_colors=False,
     show_confidences=False,
     axis_off=True,
-    show_classes_list=[]
+    show_classes_list=[],
+    return_image_array=False
 ):
     """
     Visualizes the results of usual YOLOv8 or YOLOv8-seg inference on an image
@@ -53,6 +54,8 @@ def visualize_results_usual_yolo_inference(
         show_confidences (bool): If True and show_class=True, confidences near class are visualized.
         axis_off (bool): If True, axis is turned off in the final visualization.
         show_classes_list (list): If empty, visualize all classes. Otherwise, visualize only classes in the list.
+        return_image_array (bool): If True, the function returns the image bgr array instead of displaying it. 
+                                   Default is False.
 
     Returns:
         None
@@ -153,6 +156,9 @@ def visualize_results_usual_yolo_inference(
                     thickness=thickness,
                 )
 
+    if return_image_array:
+        return labeled_image
+    else:
         # Display the final image with overlaid masks and labels
         plt.figure(figsize=(8, 8), dpi=dpi)
         labeled_image = cv2.cvtColor(labeled_image, cv2.COLOR_BGR2RGB)
@@ -273,7 +279,8 @@ def visualize_results(
     random_object_colors=False,
     show_confidences=False,
     axis_off=True,
-    show_classes_list=[]
+    show_classes_list=[],
+    return_image_array=False
 ):
     """
     Visualizes custom results of object detection or segmentation on an image.
@@ -301,7 +308,9 @@ def visualize_results(
         show_confidences (bool): If true and show_class=True, confidences near class are visualized. Default is False.
         axis_off (bool): If true, axis is turned off in the final visualization. Default is True.
         show_classes_list (list): If empty, visualize all classes. Otherwise, visualize only classes in the list.
-
+        return_image_array (bool): If True, the function returns the image bgr array instead of displaying it. 
+                                   Default is False.
+                                   
     Returns:
         None
     """
@@ -378,10 +387,13 @@ def visualize_results(
                 thickness=thickness,
             )
 
-    # Display the final image with overlaid masks and labels
-    plt.figure(figsize=(8, 8), dpi=dpi)
-    labeled_image = cv2.cvtColor(labeled_image, cv2.COLOR_BGR2RGB)
-    plt.imshow(labeled_image)
-    if axis_off:
-        plt.axis('off')
-    plt.show()
+    if return_image_array:
+        return labeled_image
+    else:
+        # Display the final image with overlaid masks and labels
+        plt.figure(figsize=(8, 8), dpi=dpi)
+        labeled_image = cv2.cvtColor(labeled_image, cv2.COLOR_BGR2RGB)
+        plt.imshow(labeled_image)
+        if axis_off:
+            plt.axis('off')
+        plt.show()

@@ -130,7 +130,8 @@ Visualizes custom results of object detection or segmentation on an image.
 - **show_confidences** (*bool*): If true and show_class=True, confidences near class are visualized. Default is False.
 - **axis_off** (*bool*): If true, axis is turned off in the final visualization. Default is True.
 - **show_classes_list** (*list*): If empty, visualize all classes. Otherwise, visualize only classes in the list.
-
+- **return_image_array** (*bool*): If True, the function returns the image (BGR np.array) instead of displaying it. 
+                                   Default is False.
 
 
 Example of using:
