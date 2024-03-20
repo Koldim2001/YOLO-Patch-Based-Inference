@@ -101,8 +101,7 @@ Class implementing combining masks/boxes from multiple crops + NMS (Non-Maximum 
 - **element_crops** (*MakeCropsDetectThem*): Object containing crop information.
 - **nms_threshold** (*float*): IoU/IoS threshold for non-maximum suppression.
 - **match_metric** (*str*): Matching metric, either 'IOU' or 'IOS'.
-- **intelligent_sorter** (*bool*): Enable sorting by area and rounded confidence parameter. 
-            If False, sorting will be done only by confidence (usual nms). (Dafault is False)
+- **intelligent_sorter** (*bool*): Enable sorting by area and rounded confidence parameter. If False, sorting will be done only by confidence (usual nms). (Dafault is False)
 
 ---
 ### 2. Custom inference visualization:
@@ -131,8 +130,7 @@ Visualizes custom results of object detection or segmentation on an image.
 - **show_confidences** (*bool*): If true and show_class=True, confidences near class are visualized. Default is False.
 - **axis_off** (*bool*): If true, axis is turned off in the final visualization. Default is True.
 - **show_classes_list** (*list*): If empty, visualize all classes. Otherwise, visualize only classes in the list.
-- **return_image_array** (*bool*): If True, the function returns the image (BGR np.array) instead of displaying it. 
-                                   Default is False.
+- **return_image_array** (*bool*): If True, the function returns the image (BGR np.array) instead of displaying it. Default is False.
 
 
 Example of using:
