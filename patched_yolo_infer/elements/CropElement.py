@@ -3,7 +3,7 @@ import cv2
 
 
 class CropElement:
-    # Класс, содержаций информацию о конкретном кропе
+    # Class containing information about a specific crop
     def __init__(
         self,
         source_image: np.ndarray,
@@ -13,21 +13,22 @@ class CropElement:
         x_start: int,
         y_start: int
     ) -> None:
-        self.source_image = source_image  # Исходное изображение 
-        self.source_image_resized = source_image_resized  # Исходное изображение (ресайзнутое до кратного размера кропам)
-        self.crop = crop  # Конкретный кроп 
-        self.number_of_crop = number_of_crop  # Номер кропа по порядку слева направо сверху вниз
-        self.x_start = x_start  # Координата верхнего левого угла Х
-        self.y_start = y_start  # Координата верхнего левого угла Y
-        # Результаты на выходе с YOLO:
-        self.detected_conf = None  # Список уверенностей задетектированных объектов
-        self.detected_cls = None  # Список классов задетектированных объектов
-        self.detected_xyxy = None  # Список списков с координатами xyxy боксов
-        self.detected_masks = None # Список np массивов с масками в случае yolo-seg
+        self.source_image = source_image  # Original image 
+        self.source_image_resized = source_image_resized  # Original image (resized to a multiple of the crop size)
+        self.crop = crop  # Specific crop 
+        self.number_of_crop = number_of_crop  # Crop number in order from left to right, top to bottom
+        self.x_start = x_start  # Coordinate of the top-left corner X
+        self.y_start = y_start  # Coordinate of the top-left corner Y
+
+        # YOLO output results:
+        self.detected_conf = None  # List of confidence scores of detected objects
+        self.detected_cls = None  # List of classes of detected objects
+        self.detected_xyxy = None  # List of lists containing xyxy box coordinates
+        self.detected_masks = None # List of np arrays containing masks in case of yolo-seg
         
-        # Уточненные координаты согласноинформации о полодении кропа
-        self.detected_xyxy_real = None  # Список списков с координатами xyxy боксов в значениях от source_image_resized
-        self.detected_masks_real = None # Список np массивов с масками в случае yolo-seg размером как source_image_resized
+        # Refined coordinates according to crop position information
+        self.detected_xyxy_real = None  # List of lists containing xyxy box coordinates in values from source_image_resized or source_image
+        self.detected_masks_real = None # List of np arrays containing masks in case of yolo-seg with the size of source_image_resized or source_image
 
     def calculate_inference(self, model, imgsz=640, conf=0.35, iou=0.7, segment=False, classes_list=None):
         # Perform inference
@@ -50,7 +51,7 @@ class CropElement:
             self.detected_masks = pred.masks.data.cpu().numpy()
 
     def calculate_real_values(self):
-        # Calculate real values of bboxes and masks
+        # Calculate real values of bboxes and masks in source_image_resized
         x_start_global = self.x_start  # Global X coordinate of the crop
         y_start_global = self.y_start  # Global Y coordinate of the crop
 
@@ -82,6 +83,7 @@ class CropElement:
                 self.detected_masks_real.append(black_image)
 
     def resize_results(self):
+        # from source_image_resized to source_image sizes transformation
         resized_xyxy = []
         resized_masks = []
 
