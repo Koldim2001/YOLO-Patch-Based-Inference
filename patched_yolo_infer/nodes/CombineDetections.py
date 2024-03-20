@@ -17,8 +17,9 @@ class CombineDetections:
         class_names (dict): Dictionary containing class names pf yolov8 model.
         crops (list): List to store the CropElement objects.
         image (np.ndarray): Source image in BGR.
-        nms_threshold (float): IoU/IoS threshold for non-maximum suppression.
+        nms_threshold (float): IOU/IOS threshold for non-maximum suppression.
         match_metric (str): Matching metric (IOU/IOS).
+        intelegence_sorter (bool): Corting by area and confederation parameter 
         detected_conf_list_full (list): List of detected confidences.
         detected_xyxy_list_full (list): List of detected bounding boxes.
         detected_masks_list_full (list): List of detected masks.
@@ -36,7 +37,8 @@ class CombineDetections:
         self,
         element_crops: MakeCropsDetectThem,
         nms_threshold=0.3,
-        match_metric='IOS'
+        match_metric='IOS',
+        intelegence_sorter=False
     ) -> None:
         self.conf_treshold = element_crops.conf
         self.class_names = element_crops.class_names_dict 
@@ -46,8 +48,10 @@ class CombineDetections:
         else:
             self.image = element_crops.crops[0].source_image_resized
 
-        self.nms_threshold = nms_threshold  # IoU treshold for NMS
-        self.match_metric = match_metric
+        self.nms_threshold = nms_threshold  # IOU or IOS treshold for NMS
+        self.match_metric = match_metric 
+        self.intelegence_sorter = intelegence_sorter # enable sorting by area and confederation parameter
+        
         # seg mode
         (
             self.detected_conf_list_full,
@@ -69,7 +73,8 @@ class CombineDetections:
                 self.detected_xyxy_list_full,
                 self.match_metric,
                 self.nms_threshold,
-                self.detected_masks_list_full
+                self.detected_masks_list_full,
+                intelegence_sorter=self.intelegence_sorter
       
             )
         else:
@@ -79,7 +84,8 @@ class CombineDetections:
                 self.detected_conf_list_full,
                 self.detected_xyxy_list_full,
                 self.match_metric, 
-                self.nms_threshold
+                self.nms_threshold,
+                intelegence_sorter=self.intelegence_sorter
             )
 
         # Apply filtering to the prediction lists
@@ -161,7 +167,7 @@ class CombineDetections:
             iou_scores.append(iou)
         return torch.tensor(iou_scores)
 
-    def nms(self, confidences: list, boxes: list, match_metric, nms_threshold, masks=None):
+    def nms(self, confidences: list,boxes: list, match_metric, nms_threshold, masks=None, intelegence_sorter=False):
         """
         Apply non-maximum suppression to avoid detecting too many
         overlapping bounding boxes for a given object.
@@ -192,9 +198,10 @@ class CombineDetections:
         # Calculate area of every box
         areas = (x2 - x1) * (y2 - y1)
 
-        # Sort the prediction boxes according to their confidence scores
-        order = confidences.argsort()
-
+        # Sort the prediction boxes according to their confidence scores and intelegence_sorter mode
+        if intelegence_sorter: order = torch.tensor(sorted(range(len(confidences)), 
+                                                           key=lambda k: (round(confidences[k].item(), 1), areas[k]), reverse=False))
+        else: order = confidences.argsort()
         # Initialise an empty list for filtered prediction boxes
         keep = []
 
@@ -285,7 +292,7 @@ class CombineDetections:
                 elif match_metric == "IOS":
                     mask_iou = self.intersect_over_smaller(masks[idx], filtered_masks)
                     mask_mask = mask_iou > nms_threshold
-
+                #create a tensor of indences to delete in tensor order
                 order_2 = order_2[mask_mask]
                 inverse_mask = ~torch.isin(order, order_2)
 
