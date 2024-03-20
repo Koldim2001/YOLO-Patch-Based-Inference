@@ -111,10 +111,8 @@ Class implementing combining masks/boxes from multiple crops + NMS (Non-Maximum 
 - **element_crops** (*MakeCropsDetectThem*): Object containing crop information.
 - **nms_threshold** (*float*): IoU/IoS threshold for non-maximum suppression.
 - **match_metric** (*str*): Matching metric, either 'IOU' or 'IOS'.
-- **intelegence_sorter** (*bool*): Enable sorting by area and rounded confidence parameter. 
+- **intelligent_sorter** (*bool*): Enable sorting by area and rounded confidence parameter. 
             If False, sorting will be done only by confidence (usual nms). (Dafault is False)
-
-
 
 ---
 ### 2. Custom inference visualization:

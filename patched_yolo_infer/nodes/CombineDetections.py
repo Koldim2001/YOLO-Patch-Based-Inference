@@ -11,7 +11,7 @@ class CombineDetections:
         element_crops (MakeCropsDetectThem): Object containing crop information.
         nms_threshold (float): IoU/IoS threshold for non-maximum suppression.
         match_metric (str): Matching metric, either 'IOU' or 'IOS'.
-        intelegence_sorter (bool): Enable sorting by area and rounded confidence parameter. 
+        intelligent_sorter (bool): Enable sorting by area and rounded confidence parameter. 
             If False, sorting will be done only by confidence (usual nms). (Dafault False)
 
     Attributes:
@@ -21,7 +21,7 @@ class CombineDetections:
         image (np.ndarray): Source image in BGR.
         nms_threshold (float): IOU/IOS threshold for non-maximum suppression.
         match_metric (str): Matching metric (IOU/IOS).
-        intelegence_sorter (bool): Flag indicating whether sorting by area and confidence parameter is enabled.
+        intelligent_sorter (bool): Flag indicating whether sorting by area and confidence parameter is enabled.
         detected_conf_list_full (list): List of detected confidences.
         detected_xyxy_list_full (list): List of detected bounding boxes.
         detected_masks_list_full (list): List of detected masks.
@@ -40,7 +40,7 @@ class CombineDetections:
         element_crops: MakeCropsDetectThem,
         nms_threshold=0.3,
         match_metric='IOS',
-        intelegence_sorter=False
+        intelligent_sorter=False
     ) -> None:
         self.conf_treshold = element_crops.conf
         self.class_names = element_crops.class_names_dict 
@@ -52,7 +52,7 @@ class CombineDetections:
 
         self.nms_threshold = nms_threshold  # IOU or IOS treshold for NMS
         self.match_metric = match_metric 
-        self.intelegence_sorter = intelegence_sorter # enable sorting by area and confidence parameter
+        self.intelligent_sorter = intelligent_sorter # enable sorting by area and confidence parameter
 
         # combinate detections of all patches
         (
@@ -75,7 +75,7 @@ class CombineDetections:
                 self.match_metric,
                 self.nms_threshold,
                 self.detected_masks_list_full,
-                intelegence_sorter=self.intelegence_sorter
+                intelligent_sorter=self.intelligent_sorter
             )  # for instance segmentation
         else:
             # Invoke the NMS method for filtering prediction
@@ -84,7 +84,7 @@ class CombineDetections:
                 self.detected_xyxy_list_full,
                 self.match_metric, 
                 self.nms_threshold,
-                intelegence_sorter=self.intelegence_sorter
+                intelligent_sorter=self.intelligent_sorter
             )  # for detection
 
         # Apply filtering (nms output indeces) to the prediction lists
@@ -166,7 +166,15 @@ class CombineDetections:
             ios_scores.append(ios)
         return torch.tensor(ios_scores)
 
-    def nms(self, confidences: list,boxes: list, match_metric, nms_threshold, masks=None, intelegence_sorter=False):
+    def nms(
+        self,
+        confidences: list,
+        boxes: list,
+        match_metric,
+        nms_threshold,
+        masks=None,
+        intelligent_sorter=False,
+    ):
         """
         Apply non-maximum suppression to avoid detecting too many
         overlapping bounding boxes for a given object.
@@ -177,6 +185,7 @@ class CombineDetections:
             match_metric (str): Matching metric, either 'IOU' or 'IOS'.
             nms_threshold (float): The threshold for match metric.
             masks (list, optional): List of masks. Defaults to None.
+            intelligent_sorter (bool, optional): intelligent sorter 
 
         Returns:
             list: List of filtered indexes.
@@ -197,8 +206,8 @@ class CombineDetections:
         # Calculate area of every box
         areas = (x2 - x1) * (y2 - y1)
 
-        # Sort the prediction boxes according to their confidence scores or intelegence_sorter mode
-        if intelegence_sorter:
+        # Sort the prediction boxes according to their confidence scores or intelligent_sorter mode
+        if intelligent_sorter:
             # Sort the prediction boxes according to their round confidence scores and area sizes
             order = torch.tensor(
                 sorted(
