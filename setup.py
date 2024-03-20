@@ -33,6 +33,8 @@ setup(
         "python",
         "yolov8",
         "yolov9",
+        "rtdetr",
+        "sam",
         "object detection",
         "instance segmentation",
         "patch-based inference",
@@ -40,6 +42,10 @@ setup(
         "yolov8-seg"
         "image patching"
         "yolo visualization"
+        "slice-based inference",
+        "slicing inference",
+        "inference visualization",
+        "patchify",
     ],
     classifiers=[
         "Development Status :: 4 - Beta",

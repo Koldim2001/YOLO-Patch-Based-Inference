@@ -22,6 +22,17 @@ YOLO-Patch-Based-Inference Example - [Open in Colab](https://colab.research.goog
 
 Example of using various functions for visualizing basic YOLOv8/v9 inference results and handling overlapping crops - [Open in Colab](https://colab.research.google.com/drive/1eM4o1e0AUQrS1mLDpcgK9HKInWEvnaMn?usp=sharing)
 
+---
+## Examples:
+
+#### Detection example:
+<img src="../readme_content/getection.gif" alt="Detection" width="800">
+
+#### Instance Segmentation example 1:
+<img src="../readme_content/segment_1.gif" alt="Segmentation" width="800">
+
+#### Instance Segmentation example 2:
+<img src="../readme_content/segment_2.gif" alt="Segmentation" width="800">
 
 
 ## Usage
@@ -100,6 +111,8 @@ Class implementing combining masks/boxes from multiple crops + NMS (Non-Maximum 
 - **element_crops** (*MakeCropsDetectThem*): Object containing crop information.
 - **nms_threshold** (*float*): IoU/IoS threshold for non-maximum suppression.
 - **match_metric** (*str*): Matching metric, either 'IOU' or 'IOS'.
+- **intelegence_sorter** (*bool*): Enable sorting by area and rounded confidence parameter. 
+            If False, sorting will be done only by confidence (usual nms). (Dafault is False)
 
 
 

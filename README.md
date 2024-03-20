@@ -13,6 +13,7 @@ pip install patched_yolo_infer
 
 [![PyPI Version](https://img.shields.io/pypi/v/patched-yolo-infer.svg)](https://pypi.org/project/patched-yolo-infer/) - Click here to visit the PyPI page for `patched-yolo-infer`, where you can find more information and documentation.
 
+Note: If CUDA support is available, it's recommended to pre-install PyTorch with CUDA support before installing the library. Otherwise, the CPU version will be installed by default.
 
 ---
 
@@ -25,8 +26,8 @@ Interactive notebooks are provided to showcase the functionality of the library.
 
 | **Topic** | **Notebook** | **YouTube** |
 | ----- | -------- | ------- |
-| [YOLO-Patch-Based-Inference Example](https://nbviewer.org/github/Koldim2001/YOLO-Patch-Based-Inference/blob/main/examples/example_patch_based_inference.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1FUao91GyB-ojGRN_okUxYyfagTT9tdsP?usp=sharing) | <p align="center"><a href="https://youtu.be"><img width=30% src="https://raw.githubusercontent.com/ultralytics/assets/main/social/logo-social-youtube-rect.png" alt="Youtube Video"></a></p> |
-| [Example of using various functions for visualizing basic YOLOv8/v9 inference results and handling overlapping crops](https://nbviewer.org/github/Koldim2001/YOLO-Patch-Based-Inference/blob/main/examples/example_extra_functions.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1eM4o1e0AUQrS1mLDpcgK9HKInWEvnaMn?usp=sharing) | <p align="center"><a href="https://youtu.be"><img width=30% src="https://raw.githubusercontent.com/ultralytics/assets/main/social/logo-social-youtube-rect.png" alt="Youtube Video"></a></p> |
+| [Patch-Based-Inference Example](https://nbviewer.org/github/Koldim2001/YOLO-Patch-Based-Inference/blob/main/examples/example_patch_based_inference.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1FUao91GyB-ojGRN_okUxYyfagTT9tdsP?usp=sharing) | <p align="center"><a href="https://youtu.be"><img width=30% src="https://raw.githubusercontent.com/ultralytics/assets/main/social/logo-social-youtube-rect.png" alt="Youtube Video"></a></p> |
+| [Example of utilizing a function to visualize basic Ultralytics model inference results and managing overlapping image crops](https://nbviewer.org/github/Koldim2001/YOLO-Patch-Based-Inference/blob/main/examples/example_extra_functions.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1eM4o1e0AUQrS1mLDpcgK9HKInWEvnaMn?usp=sharing) | <p align="center"><a href="https://youtu.be"><img width=30% src="https://raw.githubusercontent.com/ultralytics/assets/main/social/logo-social-youtube-rect.png" alt="Youtube Video"></a></p> |
 
 
 For Russian users, there is a detailed video presentation of this project. YouTube videos in Russian are available at this [__link__](https://www.youtube.com/channel/UCJG413_ZLkiE5f_OMyGv5KQ).
@@ -120,6 +121,8 @@ Class implementing combining masks/boxes from multiple crops + NMS (Non-Maximum 
 - **element_crops** (*MakeCropsDetectThem*): Object containing crop information.
 - **nms_threshold** (*float*): IoU/IoS threshold for non-maximum suppression.
 - **match_metric** (*str*): Matching metric, either 'IOU' or 'IOS'.
+- **intelegence_sorter** (*bool*): Enable sorting by area and rounded confidence parameter. 
+            If False, sorting will be done only by confidence (usual nms). (Dafault is False)
 
 
 

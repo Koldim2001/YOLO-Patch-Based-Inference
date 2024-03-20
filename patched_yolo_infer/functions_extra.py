@@ -58,7 +58,7 @@ def visualize_results_usual_yolo_inference(
                                    Default is False.
 
     Returns:
-        None
+        None/np.array
     """
 
     # Perform inference
@@ -312,7 +312,7 @@ def visualize_results(
                                    Default is False.
                                    
     Returns:
-        None
+        None/np.array
     """
 
     # Create a copy of the input image

@@ -11,6 +11,8 @@ class CombineDetections:
         element_crops (MakeCropsDetectThem): Object containing crop information.
         nms_threshold (float): IoU/IoS threshold for non-maximum suppression.
         match_metric (str): Matching metric, either 'IOU' or 'IOS'.
+        intelegence_sorter (bool): Enable sorting by area and rounded confidence parameter. 
+            If False, sorting will be done only by confidence (usual nms). (Dafault False)
 
     Attributes:
         conf_treshold (float): Confidence threshold of yolov8.
@@ -19,7 +21,7 @@ class CombineDetections:
         image (np.ndarray): Source image in BGR.
         nms_threshold (float): IOU/IOS threshold for non-maximum suppression.
         match_metric (str): Matching metric (IOU/IOS).
-        intelegence_sorter (bool): Corting by area and confederation parameter 
+        intelegence_sorter (bool): Flag indicating whether sorting by area and confidence parameter is enabled.
         detected_conf_list_full (list): List of detected confidences.
         detected_xyxy_list_full (list): List of detected bounding boxes.
         detected_masks_list_full (list): List of detected masks.
@@ -50,9 +52,9 @@ class CombineDetections:
 
         self.nms_threshold = nms_threshold  # IOU or IOS treshold for NMS
         self.match_metric = match_metric 
-        self.intelegence_sorter = intelegence_sorter # enable sorting by area and confederation parameter
-        
-        # seg mode
+        self.intelegence_sorter = intelegence_sorter # enable sorting by area and confidence parameter
+
+        # combinate detections of all patches
         (
             self.detected_conf_list_full,
             self.detected_xyxy_list_full,
@@ -68,27 +70,24 @@ class CombineDetections:
         if len(self.detected_masks_list_full)>0:
 
             self.filtered_indices = self.nms(
-   
                 self.detected_conf_list_full,
                 self.detected_xyxy_list_full,
                 self.match_metric,
                 self.nms_threshold,
                 self.detected_masks_list_full,
                 intelegence_sorter=self.intelegence_sorter
-      
-            )
+            )  # for instance segmentation
         else:
             # Invoke the NMS method for filtering prediction
             self.filtered_indices = self.nms(
- 
                 self.detected_conf_list_full,
                 self.detected_xyxy_list_full,
                 self.match_metric, 
                 self.nms_threshold,
                 intelegence_sorter=self.intelegence_sorter
-            )
+            )  # for detection
 
-        # Apply filtering to the prediction lists
+        # Apply filtering (nms output indeces) to the prediction lists
         self.filtered_confidences = [self.detected_conf_list_full[i] for i in self.filtered_indices]
         self.filtered_boxes = [self.detected_xyxy_list_full[i] for i in self.filtered_indices]
         self.filtered_classes_id = [self.detected_cls_id_list_full[i] for i in self.filtered_indices]
@@ -157,15 +156,15 @@ class CombineDetections:
         Returns:
             torch.Tensor: IoU scores for each mask in masks_list compared to the input mask, calculated over the smaller area.
         """
-        iou_scores = []
+        ios_scores = []
         for other_mask in masks_list:
             # Compute intersection and area of smaller mask
             intersection = np.logical_and(mask, other_mask).sum()
             smaller_area = min(mask.sum(), other_mask.sum())
             # Compute IoU score over smaller area, avoiding division by zero
-            iou = intersection / smaller_area if smaller_area != 0 else 0
-            iou_scores.append(iou)
-        return torch.tensor(iou_scores)
+            ios = intersection / smaller_area if smaller_area != 0 else 0
+            ios_scores.append(ios)
+        return torch.tensor(ios_scores)
 
     def nms(self, confidences: list,boxes: list, match_metric, nms_threshold, masks=None, intelegence_sorter=False):
         """
@@ -198,10 +197,18 @@ class CombineDetections:
         # Calculate area of every box
         areas = (x2 - x1) * (y2 - y1)
 
-        # Sort the prediction boxes according to their confidence scores and intelegence_sorter mode
-        if intelegence_sorter: order = torch.tensor(sorted(range(len(confidences)), 
-                                                           key=lambda k: (round(confidences[k].item(), 1), areas[k]), reverse=False))
-        else: order = confidences.argsort()
+        # Sort the prediction boxes according to their confidence scores or intelegence_sorter mode
+        if intelegence_sorter:
+            # Sort the prediction boxes according to their round confidence scores and area sizes
+            order = torch.tensor(
+                sorted(
+                    range(len(confidences)),
+                    key=lambda k: (round(confidences[k].item(), 1), areas[k]),
+                    reverse=False,
+                )
+            )
+        else:
+            order = confidences.argsort()
         # Initialise an empty list for filtered prediction boxes
         keep = []
 
@@ -245,13 +252,6 @@ class CombineDetections:
             # Find the areas of BBoxes
             rem_areas = torch.index_select(areas, dim=0, index=order)
 
-            # Calculate the distance between centers of the boxes
-            cx = (x1[idx] + x2[idx]) / 2
-            cy = (y1[idx] + y2[idx]) / 2
-            rem_cx = (x1[order] + x2[order]) / 2
-            rem_cy = (y1[order] + y2[order]) / 2
-            dist_centers = ((cx - rem_cx) ** 2 + (cy - rem_cy) ** 2).sqrt()
-
             if match_metric == "IOU":
                 # Find the union of every prediction with the prediction
                 union = (rem_areas - inter) + areas[idx]
@@ -263,15 +263,6 @@ class CombineDetections:
                 smaller = torch.min(rem_areas, areas[idx])
                 # Find the IoU of every prediction
                 match_metric_value = inter / smaller
-
-            elif match_metric == "DIoU":
-                # Calculate the diagonal distance between the boxes
-                diag_dist = ((x2[idx] - x1[idx]) ** 2 + (y2[idx] - y1[idx]) ** 2).sqrt()
-                # Calculate the IoU
-                union = (rem_areas - inter) + areas[idx]
-                iou = inter / union
-                # Calculate DIoU
-                match_metric_value = iou - dist_centers / (diag_dist + 1e-7)
 
             else:
                 raise ValueError("Unknown matching metric")
@@ -290,9 +281,9 @@ class CombineDetections:
                     mask_mask = mask_iou > nms_threshold
 
                 elif match_metric == "IOS":
-                    mask_iou = self.intersect_over_smaller(masks[idx], filtered_masks)
-                    mask_mask = mask_iou > nms_threshold
-                #create a tensor of indences to delete in tensor order
+                    mask_ios = self.intersect_over_smaller(masks[idx], filtered_masks)
+                    mask_mask = mask_ios > nms_threshold
+                # create a tensor of indences to delete in tensor order
                 order_2 = order_2[mask_mask]
                 inverse_mask = ~torch.isin(order, order_2)
 
