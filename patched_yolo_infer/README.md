@@ -10,6 +10,9 @@ You can install the library via pip:
 pip install patched_yolo_infer
 ```
 
+Note: If CUDA support is available, it's recommended to pre-install PyTorch with CUDA support before installing the library. Otherwise, the CPU version will be installed by default.
+
+
 </details>
 
 ## Notebooks
@@ -21,19 +24,6 @@ __Check this Colab examples:__
 YOLO-Patch-Based-Inference Example - [Open in Colab](https://colab.research.google.com/drive/1FUao91GyB-ojGRN_okUxYyfagTT9tdsP?usp=sharing)
 
 Example of using various functions for visualizing basic YOLOv8/v9 inference results and handling overlapping crops - [Open in Colab](https://colab.research.google.com/drive/1eM4o1e0AUQrS1mLDpcgK9HKInWEvnaMn?usp=sharing)
-
----
-## Examples:
-
-#### Detection example:
-<img src="../readme_content/getection.gif" alt="Detection" width="800">
-
-#### Instance Segmentation example 1:
-<img src="../readme_content/segment_1.gif" alt="Segmentation" width="800">
-
-#### Instance Segmentation example 2:
-<img src="../readme_content/segment_2.gif" alt="Segmentation" width="800">
-
 
 ## Usage
 
