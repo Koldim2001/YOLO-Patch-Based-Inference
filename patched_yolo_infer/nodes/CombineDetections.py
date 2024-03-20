@@ -59,10 +59,10 @@ class CombineDetections:
         self.detected_cls_names_list_full = [
             self.class_names[value] for value in self.detected_cls_id_list_full
         ]  # make str list
-        
+
         # Invoke the NMS for segmentation masks method for filtering predictions
         if len(self.detected_masks_list_full)>0:
-            
+
             self.filtered_indices = self.nms(
    
                 self.detected_conf_list_full,
@@ -117,8 +117,6 @@ class CombineDetections:
 
         return detected_conf, detected_xyxy, detected_masks, detected_cls
 
-
-
     @staticmethod
     def intersect_over_union(mask, masks_list):
         """
@@ -162,7 +160,7 @@ class CombineDetections:
             iou = intersection / smaller_area if smaller_area != 0 else 0
             iou_scores.append(iou)
         return torch.tensor(iou_scores)
-    
+
     def nms(self, confidences: list, boxes: list, match_metric, nms_threshold, masks=None):
         """
         Apply non-maximum suppression to avoid detecting too many
@@ -196,7 +194,7 @@ class CombineDetections:
 
         # Sort the prediction boxes according to their confidence scores
         order = confidences.argsort()
- 
+
         # Initialise an empty list for filtered prediction boxes
         keep = []
 
@@ -239,7 +237,7 @@ class CombineDetections:
 
             # Find the areas of BBoxes
             rem_areas = torch.index_select(areas, dim=0, index=order)
-            
+
             # Calculate the distance between centers of the boxes
             cx = (x1[idx] + x2[idx]) / 2
             cy = (y1[idx] + y2[idx]) / 2
@@ -252,7 +250,7 @@ class CombineDetections:
                 union = (rem_areas - inter) + areas[idx]
                 # Find the IoU of every prediction
                 match_metric_value = inter / union
-                
+
             elif match_metric == "IOS":
                 # Find the smaller area of every prediction with the prediction
                 smaller = torch.min(rem_areas, areas[idx])
@@ -276,10 +274,10 @@ class CombineDetections:
             if masks is not None and torch.any(match_metric_value > 0):
 
                 mask_mask = match_metric_value > 0 
-                
+
                 order_2 = order[mask_mask]
                 filtered_masks = [masks[i] for i in order_2]
-                
+
                 if match_metric == "IOU":
                     mask_iou = self.intersect_over_union(masks[idx], filtered_masks)
                     mask_mask = mask_iou > nms_threshold
@@ -287,19 +285,17 @@ class CombineDetections:
                 elif match_metric == "IOS":
                     mask_iou = self.intersect_over_smaller(masks[idx], filtered_masks)
                     mask_mask = mask_iou > nms_threshold
-                
+
                 order_2 = order_2[mask_mask]
                 inverse_mask = ~torch.isin(order, order_2)
 
-                # Оставить только те значения order, которые не содержатся в order_2
+                # Keep only those order values that are not contained in order_2
                 order = order[inverse_mask]
 
             else:
                 # Keep the boxes with IoU/IoS less than threshold
                 mask = match_metric_value < nms_threshold
-               
+
                 order = order[mask]
 
         return keep
-    
- 
