@@ -68,7 +68,6 @@ class CropElement:
             self.detected_xyxy_real.append([x_min_real, y_min_real, x_max_real, y_max_real])
 
         if self.detected_masks is not None:
-            self.detected_masks_real = []
             for mask in self.detected_masks:
                 # Create a black image with the same size as the source image
                 black_image = np.zeros((self.source_image_resized.shape[0], self.source_image_resized.shape[1]))
