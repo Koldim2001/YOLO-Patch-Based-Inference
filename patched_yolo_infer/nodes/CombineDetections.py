@@ -1,5 +1,5 @@
 import torch
-
+import numpy as np
 from .MakeCropsDetectThem import MakeCropsDetectThem
 
 
@@ -17,8 +17,9 @@ class CombineDetections:
         class_names (dict): Dictionary containing class names pf yolov8 model.
         crops (list): List to store the CropElement objects.
         image (np.ndarray): Source image in BGR.
-        nms_threshold (float): IoU/IoS threshold for non-maximum suppression.
+        nms_threshold (float): IOU/IOS threshold for non-maximum suppression.
         match_metric (str): Matching metric (IOU/IOS).
+        intelegence_sorter (bool): Corting by area and confederation parameter 
         detected_conf_list_full (list): List of detected confidences.
         detected_xyxy_list_full (list): List of detected bounding boxes.
         detected_masks_list_full (list): List of detected masks.
@@ -36,7 +37,8 @@ class CombineDetections:
         self,
         element_crops: MakeCropsDetectThem,
         nms_threshold=0.3,
-        match_metric='IOS'
+        match_metric='IOS',
+        intelegence_sorter=False
     ) -> None:
         self.conf_treshold = element_crops.conf
         self.class_names = element_crops.class_names_dict 
@@ -46,8 +48,11 @@ class CombineDetections:
         else:
             self.image = element_crops.crops[0].source_image_resized
 
-        self.nms_threshold = nms_threshold  # IoU treshold for NMS
-        self.match_metric = match_metric
+        self.nms_threshold = nms_threshold  # IOU or IOS treshold for NMS
+        self.match_metric = match_metric 
+        self.intelegence_sorter = intelegence_sorter # enable sorting by area and confederation parameter
+        
+        # seg mode
         (
             self.detected_conf_list_full,
             self.detected_xyxy_list_full,
@@ -59,13 +64,29 @@ class CombineDetections:
             self.class_names[value] for value in self.detected_cls_id_list_full
         ]  # make str list
 
-        # Invoke the NMS method for filtering predictions
-        self.filtered_indices = self.nms(
-            self.detected_conf_list_full,
-            self.detected_xyxy_list_full,
-            self.match_metric, 
-            self.nms_threshold
-        )
+        # Invoke the NMS for segmentation masks method for filtering predictions
+        if len(self.detected_masks_list_full)>0:
+
+            self.filtered_indices = self.nms(
+   
+                self.detected_conf_list_full,
+                self.detected_xyxy_list_full,
+                self.match_metric,
+                self.nms_threshold,
+                self.detected_masks_list_full,
+                intelegence_sorter=self.intelegence_sorter
+      
+            )
+        else:
+            # Invoke the NMS method for filtering prediction
+            self.filtered_indices = self.nms(
+ 
+                self.detected_conf_list_full,
+                self.detected_xyxy_list_full,
+                self.match_metric, 
+                self.nms_threshold,
+                intelegence_sorter=self.intelegence_sorter
+            )
 
         # Apply filtering to the prediction lists
         self.filtered_confidences = [self.detected_conf_list_full[i] for i in self.filtered_indices]
@@ -102,12 +123,51 @@ class CombineDetections:
 
         return detected_conf, detected_xyxy, detected_masks, detected_cls
 
-    def nms(self, 
-        confidences: list, 
-        boxes: list, 
-        match_metric,
-        nms_threshold,
-    ):
+    @staticmethod
+    def intersect_over_union(mask, masks_list):
+        """
+        Compute Intersection over Union (IoU) scores for a given mask against a list of masks.
+
+        Args:
+            mask (np.ndarray): Binary mask to compare.
+            masks_list (list of np.ndarray): List of binary masks for comparison.
+
+        Returns:
+            torch.Tensor: IoU scores for each mask in masks_list compared to the input mask.
+        """
+        iou_scores = []
+        for other_mask in masks_list:
+            # Compute intersection and union
+            intersection = np.logical_and(mask, other_mask).sum()
+            union = np.logical_or(mask, other_mask).sum()
+            # Compute IoU score, avoiding division by zero
+            iou = intersection / union if union != 0 else 0
+            iou_scores.append(iou)
+        return torch.tensor(iou_scores)
+
+    @staticmethod
+    def intersect_over_smaller(mask, masks_list):
+        """
+        Compute Intersection over Smaller area scores for a given mask against a list of masks.
+
+        Args:
+            mask (np.ndarray): Binary mask to compare.
+            masks_list (list of np.ndarray): List of binary masks for comparison.
+
+        Returns:
+            torch.Tensor: IoU scores for each mask in masks_list compared to the input mask, calculated over the smaller area.
+        """
+        iou_scores = []
+        for other_mask in masks_list:
+            # Compute intersection and area of smaller mask
+            intersection = np.logical_and(mask, other_mask).sum()
+            smaller_area = min(mask.sum(), other_mask.sum())
+            # Compute IoU score over smaller area, avoiding division by zero
+            iou = intersection / smaller_area if smaller_area != 0 else 0
+            iou_scores.append(iou)
+        return torch.tensor(iou_scores)
+
+    def nms(self, confidences: list,boxes: list, match_metric, nms_threshold, masks=None, intelegence_sorter=False):
         """
         Apply non-maximum suppression to avoid detecting too many
         overlapping bounding boxes for a given object.
@@ -117,6 +177,7 @@ class CombineDetections:
             boxes (list): List of bounding boxes.
             match_metric (str): Matching metric, either 'IOU' or 'IOS'.
             nms_threshold (float): The threshold for match metric.
+            masks (list, optional): List of masks. Defaults to None.
 
         Returns:
             list: List of filtered indexes.
@@ -137,9 +198,10 @@ class CombineDetections:
         # Calculate area of every box
         areas = (x2 - x1) * (y2 - y1)
 
-        # Sort the prediction boxes according to their confidence scores
-        order = confidences.argsort()
-
+        # Sort the prediction boxes according to their confidence scores and intelegence_sorter mode
+        if intelegence_sorter: order = torch.tensor(sorted(range(len(confidences)), 
+                                                           key=lambda k: (round(confidences[k].item(), 1), areas[k]), reverse=False))
+        else: order = confidences.argsort()
         # Initialise an empty list for filtered prediction boxes
         keep = []
 
@@ -214,8 +276,33 @@ class CombineDetections:
             else:
                 raise ValueError("Unknown matching metric")
 
-            # Keep the boxes with IoU/IoS less than threshold
-            mask = match_metric_value < nms_threshold
-            order = order[mask]
+            # If masks are provided and IoU based on bounding boxes is greater than 0,
+            # calculate IoU for masks and keep the ones with IoU < nms_threshold
+            if masks is not None and torch.any(match_metric_value > 0):
+
+                mask_mask = match_metric_value > 0 
+
+                order_2 = order[mask_mask]
+                filtered_masks = [masks[i] for i in order_2]
+
+                if match_metric == "IOU":
+                    mask_iou = self.intersect_over_union(masks[idx], filtered_masks)
+                    mask_mask = mask_iou > nms_threshold
+
+                elif match_metric == "IOS":
+                    mask_iou = self.intersect_over_smaller(masks[idx], filtered_masks)
+                    mask_mask = mask_iou > nms_threshold
+                #create a tensor of indences to delete in tensor order
+                order_2 = order_2[mask_mask]
+                inverse_mask = ~torch.isin(order, order_2)
+
+                # Keep only those order values that are not contained in order_2
+                order = order[inverse_mask]
+
+            else:
+                # Keep the boxes with IoU/IoS less than threshold
+                mask = match_metric_value < nms_threshold
+
+                order = order[mask]
 
         return keep

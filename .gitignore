@@ -1,3 +1,12 @@
+*.png
+*.jpg
+*.JPG
+*.zip
+*.csv
+*.mp4
+*.avi 
+*.yaml
+*.mov
 **test_images
 **.pt
 **__pycache__
