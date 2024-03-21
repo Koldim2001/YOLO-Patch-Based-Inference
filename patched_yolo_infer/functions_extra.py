@@ -121,7 +121,7 @@ def visualize_results_usual_yolo_inference(
                 mask_contours, _ = cv2.findContours(
                     mask_resized.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
                 )
-                
+
                 if fill_mask:
                     color_mask = np.zeros_like(img)
                     color_mask[mask_resized > 0] = color

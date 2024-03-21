@@ -8,7 +8,7 @@ with codecs.open(os.path.join(pwd, "patched_yolo_infer/README.md"), encoding="ut
     long_description = "\n" + fh.read()
 
 
-VERSION = '1.0.5'
+VERSION = '1.1.0'
 DESCRIPTION = '''YOLO-Patch-Based-Inference for detection/segmentation of small objects in images.'''
 
 setup(
@@ -39,16 +39,16 @@ setup(
         "instance segmentation",
         "patch-based inference",
         "small object detection",
-        "yolov8-seg"
-        "image patching"
-        "yolo visualization"
+        "yolov8-seg",
+        "image patching",
+        "yolo visualization",
         "slice-based inference",
         "slicing inference",
         "inference visualization",
         "patchify",
     ],
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
