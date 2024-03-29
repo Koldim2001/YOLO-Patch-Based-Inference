@@ -12,7 +12,7 @@ class CombineDetections:
         nms_threshold (float): IoU/IoS threshold for non-maximum suppression.
         match_metric (str): Matching metric, either 'IOU' or 'IOS'.
         intelligent_sorter (bool): Enable sorting by area and rounded confidence parameter. 
-            If False, sorting will be done only by confidence (usual nms). (Dafault False)
+            If False, sorting will be done only by confidence (usual nms). (Dafault True)
 
     Attributes:
         conf_treshold (float): Confidence threshold of yolov8.
@@ -40,7 +40,7 @@ class CombineDetections:
         element_crops: MakeCropsDetectThem,
         nms_threshold=0.3,
         match_metric='IOS',
-        intelligent_sorter=False
+        intelligent_sorter=True
     ) -> None:
         self.conf_treshold = element_crops.conf
         self.class_names = element_crops.class_names_dict 

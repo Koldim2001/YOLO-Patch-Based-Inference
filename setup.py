@@ -8,13 +8,13 @@ with codecs.open(os.path.join(pwd, "patched_yolo_infer/README.md"), encoding="ut
     long_description = "\n" + fh.read()
 
 
-VERSION = '1.1.0'
+VERSION = '1.1.1'
 DESCRIPTION = '''YOLO-Patch-Based-Inference for detection/segmentation of small objects in images.'''
 
 setup(
     name="patched_yolo_infer",
     version=VERSION,
-    license="MIT",
+    license="AGPL-3.0 license",
     url="https://github.com/Koldim2001/YOLO-Patch-Based-Inference",
     author="Koldim2001",
     description=DESCRIPTION,
@@ -46,12 +46,14 @@ setup(
         "slicing inference",
         "inference visualization",
         "patchify",
+        "ultralytics",
+        "SAHI",
     ],
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+) (AGPL-3.0)",
         "Operating System :: OS Independent",
     ],
 )
