@@ -1,8 +1,15 @@
 # YOLO-Patch-Based-Inference
 
-This library facilitates various visualizations of inference results from ultralytics segmentation/detection models, including cropping with overlays, as well as **a patch-based inference algorithm enabling the detection of small objects in images**. It caters to both object detection and instance segmentation tasks.
+This library facilitates various visualizations of inference results from ultralytics segmentation/detection models, including cropping with overlays, as well as **a patch-based inference algorithm enabling the detection/instance segmentation of small objects in images**. 
 
 **Model Support**: The library offers support for multiple ultralytics deep learning models, such as YOLOv8, YOLOv9, SAM, and RTDETR. Users can select from pre-trained options or utilize custom-trained models to best meet their task requirements.
+
+---
+
+__Instance segmentation example with Patch-Based-Inference:__
+
+![segmentation](https://github.com/Koldim2001/YOLO-Patch-Based-Inference/blob/main/readme_content/best_segment_example.png)
+
 ## Installation
 You can install the library via pip:
 
