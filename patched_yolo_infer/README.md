@@ -4,11 +4,6 @@ This library facilitates various visualizations of inference results from ultral
 
 **Model Support**: The library offers support for multiple ultralytics deep learning models, such as YOLOv8, YOLOv9, SAM, and RTDETR. Users can select from pre-trained options or utilize custom-trained models to best meet their task requirements.
 
----
-
-__Instance segmentation example with Patch-Based-Inference:__
-
-![segmentation](https://github.com/Koldim2001/YOLO-Patch-Based-Inference/blob/main/readme_content/best_segment_example.png)
 
 ## Installation
 You can install the library via pip:
