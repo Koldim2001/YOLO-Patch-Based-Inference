@@ -182,6 +182,6 @@ visualize_results(
 [colab_badge]: https://colab.research.google.com/assets/colab-badge.svg
 [colab_ex1]: https://colab.research.google.com/drive/1FUao91GyB-ojGRN_okUxYyfagTT9tdsP?usp=sharing
 [yt_link1]: https://youtu.be/IfbNOLROym4
-[nb_example1]: https://nbviewer.org/github/Koldim2001/YOLO-Patch-Based-Inference/blob/main/examples/example_extra_functions.ipynb
+[nb_example2]: https://nbviewer.org/github/Koldim2001/YOLO-Patch-Based-Inference/blob/main/examples/example_extra_functions.ipynb
 [colab_ex2]: https://colab.research.google.com/drive/1eM4o1e0AUQrS1mLDpcgK9HKInWEvnaMn?usp=sharing
 [yt_link2]: https://youtu.be/nBQuWa63188
