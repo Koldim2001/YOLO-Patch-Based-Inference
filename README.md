@@ -2,7 +2,7 @@
 
 This library facilitates various visualizations of inference results from ultralytics segmentation/detection models, including cropping with overlays, as well as **a patch-based inference algorithm enabling the detection of small objects in images**. It caters to both object detection and instance segmentation tasks.
 
-**Model Support**: The library offers support for multiple ultralytics deep learning models, such as YOLOv8, YOLOv9, SAM, and RTDETR. Users can select from pre-trained options or utilize custom-trained models to best meet their task requirements.
+**Model Support**: The library offers support for multiple ultralytics deep learning models, such as YOLOv8, YOLOv8-seg, YOLOv9, YOLOv9-seg, FastSAM, and RTDETR. Users can select from pre-trained options or utilize custom-trained models to best meet their task requirements.
 
 ## Installation
 You can install the library via pip:
