@@ -23,7 +23,7 @@ Interactive notebooks are provided to showcase the functionality of the library.
 
 __Check this Colab examples:__
                          
-YOLO-Patch-Based-Inference Example - [Open in Colab](https://colab.research.google.com/drive/1FUao91GyB-ojGRN_okUxYyfagTT9tdsP?usp=sharing)
+Patch-Based-Inference Example - [Open in Colab](https://colab.research.google.com/drive/1XCpIYLMFEmGSO0XCOkSD7CcD9SFHSJPA?usp=sharing)
 
 Example of using various functions for visualizing basic YOLOv8/v9 inference results and handling overlapping crops - [Open in Colab](https://colab.research.google.com/drive/1eM4o1e0AUQrS1mLDpcgK9HKInWEvnaMn?usp=sharing)
 
