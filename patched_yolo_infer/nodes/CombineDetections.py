@@ -25,7 +25,7 @@ class CombineDetections:
         detected_conf_list_full (list): List of detected confidences.
         detected_xyxy_list_full (list): List of detected bounding boxes.
         detected_masks_list_full (list): List of detected masks.
-        detected_polygons_list_full (list): List of detected polygons when memory optimization.
+        detected_polygons_list_full (list): List of detected polygons when memory optimization is enabled.
         detected_cls_id_list_full (list): List of detected class IDs.
         detected_cls_names_list_full (list): List of detected class names.
         filtered_indices (list): List of indices after non-maximum suppression.
@@ -105,7 +105,7 @@ class CombineDetections:
             self.filtered_polygons = [self.detected_polygons_list_full[i] for i in self.filtered_indices]
         else:
             self.filtered_polygons = []
-            
+
     def combinate_detections(self, crops):
         """
         Combine detections from multiple crop elements.

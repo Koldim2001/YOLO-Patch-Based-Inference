@@ -264,6 +264,7 @@ def visualize_results(
     confidences=[],
     classes_names=[], 
     masks=[],
+    polygons=[],
     segment=False,
     show_boxes=True,
     show_class=True,
@@ -342,7 +343,7 @@ def visualize_results(
         box = boxes[i]
         x_min, y_min, x_max, y_max = box
 
-        if segment:
+        if segment and len(masks) > 0:
             mask = masks[i]
             # Resize mask to the size of the original image using nearest neighbor interpolation
             mask_resized = cv2.resize(
@@ -359,6 +360,13 @@ def visualize_results(
                 labeled_image = cv2.addWeighted(labeled_image, 1, color_mask, alpha, 0)
 
             cv2.drawContours(labeled_image, mask_contours, -1, color, thickness)
+        
+        elif segment and len(polygons) > 0:
+            if len(polygons[i]) > 0:
+                points = np.array(polygons[i].reshape((-1, 1, 2)), dtype=np.int32)
+                cv2.drawContours(labeled_image, [points], -1, color, thickness)
+                if fill_mask:
+                    cv2.fillPoly(labeled_image, pts=[points], color=(*color, alpha))
 
         # Write class label
         if show_boxes:
