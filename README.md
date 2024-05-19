@@ -112,7 +112,7 @@ Class implementing cropping and passing crops through a neural network for detec
 | conf                  | float                  | 0.5          | Confidence threshold for detections YOLO.                                                                      |
 | iou                   | float                  | 0.7          | IoU threshold for non-maximum suppression YOLOv8 of single  crop.                                              |
 | classes_list          | List[int] or None      | None         | List of classes to filter detections. If None, all classes are considered.                                     |
-| segment               | bool                   | False        | Whether to perform segmentation (YOLOv8-seg).                                                                  |
+| segment               | bool                   | False        | Whether to perform segmentation (if the model supports it).                                                    |
 | shape_x               | int                    | 700          | Size of the crop in the x-coordinate.                                                                          |
 | shape_y               | int                    | 600          | Size of the crop in the y-coordinate.                                                                          |
 | overlap_x             | float                  | 25           | Percentage of overlap along the x-axis.                                                                        |
