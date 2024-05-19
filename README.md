@@ -59,7 +59,7 @@ The output obtained from the process includes several attributes that can be lev
 
 3. boxes: These bounding boxes are represented as a list of lists, where each list contains four values: [x_min, y_min, x_max, y_max]. These values correspond to the coordinates of the top-left and bottom-right corners of each bounding box.
 
-4. masks: If available, this attribute provides segmentation masks corresponding to the detected objects. These masks can be used to precisely delineate object boundaries.
+4. polygons: If available, this attribute provides a list containing NumPy arrays of polygon coordinates that represent segmentation masks corresponding to the detected objects. These polygons can be utilized to accurately outline the boundaries of each object.
 
 5. classes_ids: This attribute contains the class IDs assigned to each detected object. These IDs correspond to specific object classes defined during the model training phase.
 
@@ -91,7 +91,7 @@ result = CombineDetections(element_crops, nms_threshold=0.25, match_metric='IOS'
 img=result.image
 confidences=result.filtered_confidences
 boxes=result.filtered_boxes
-masks=result.filtered_masks
+polygons=result.filtered_polygons
 classes_ids=result.filtered_classes_id
 classes_names=result.filtered_classes_names
 ```
@@ -115,6 +115,7 @@ Class implementing cropping and passing crops through a neural network for detec
 - **overlap_y** (*float*): Percentage of overlap along the y-axis.
 - **show_crops** (*bool*): Whether to visualize the cropping.
 - **resize_initial_size** (*bool*): Whether to resize the results to the original image size (ps: slow operation).
+- **memory_optimize** (*bool*): Memory optimization option for segmentation (less accurate results when enabled).
 
 **CombineDetections**
 Class implementing combining masks/boxes from multiple crops + NMS (Non-Maximum Suppression).\
@@ -137,6 +138,7 @@ Visualizes custom results of object detection or segmentation on an image.
 - **classes_ids** (*list*): A list of class IDs for each detection.
 - **confidences** (*list*): A list of confidence scores corresponding to each bounding box. Default is an empty list.
 - **classes_names** (*list*): A list of class names corresponding to the class IDs. Default is an empty list.
+- **polygons** (*list*): A list containing NumPy arrays of polygon coordinates that represent segmentation masks.
 - **masks** (*list*): A list of masks. Default is an empty list.
 - **segment** (*bool*): Whether to perform instance segmentation. Default is False.
 - **show_boxes** (*bool*): Whether to show bounding boxes. Default is True.
@@ -170,11 +172,44 @@ visualize_results(
     img=result.image,
     confidences=result.filtered_confidences,
     boxes=result.filtered_boxes,
-    masks=result.filtered_masks,
+    polygons=result.filtered_polygons,
     classes_ids=result.filtered_classes_id,
     classes_names=result.filtered_classes_names,
     segment=False,
 )
+```
+
+---
+---
+
+## __HOW TO IMPROVE THE QUALITY OF THE ALGORITHM FOR THE TASK OF INSTANCE SEGMENTATION:__
+
+In this approach, all operations under the hood are performed on binary masks of recognized objects. Storing these masks consumes a lot of memory, so this method requires more RAM and slightly more processing time. However, the accuracy of recognition significantly improves, which is especially noticeable in cases where there are many objects of different sizes and they are densely packed. Therefore, we recommend using this approach in production if accuracy is important and not speed, and if your computational resources allow storing hundreds of binary masks in RAM.
+
+The difference in the approach to using the function lies in specifying the parameter ```memory_optimize=False``` in the ```MakeCropsDetectThem``` class.
+In such a case, the informative values after processing will be the following:
+
+1. img: This attribute contains the original image on which the inference was performed. It provides context for the detected objects.
+
+2. confidences: This attribute holds the confidence scores associated with each detected object. These scores indicate the model's confidence level in the accuracy of its predictions.
+
+3. boxes: These bounding boxes are represented as a list of lists, where each list contains four values: [x_min, y_min, x_max, y_max]. These values correspond to the coordinates of the top-left and bottom-right corners of each bounding box.
+
+4. masks: This attribute provides segmentation binary masks corresponding to the detected objects. These masks can be used to precisely delineate object boundaries.
+
+5. classes_ids: This attribute contains the class IDs assigned to each detected object. These IDs correspond to specific object classes defined during the model training phase.
+
+6. classes_names: These are the human-readable names corresponding to the class IDs. They provide semantic labels for the detected objects, making the results easier to interpret.
+
+
+Here's how you can obtain them:
+```python
+img=result.image
+confidences=result.filtered_confidences
+boxes=result.filtered_boxes
+masks=result.filtered_masks
+classes_ids=result.filtered_classes_id
+classes_names=result.filtered_classes_names
 ```
 
 
