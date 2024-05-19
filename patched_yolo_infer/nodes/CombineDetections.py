@@ -56,7 +56,7 @@ class CombineDetections:
         self.match_metric = match_metric 
         self.intelligent_sorter = intelligent_sorter # enable sorting by area and confidence parameter
 
-        # combinate detections of all patches
+        # Combinate detections of all patches
         (
             self.detected_conf_list_full,
             self.detected_xyxy_list_full,
@@ -70,7 +70,7 @@ class CombineDetections:
         ]  # make str list
 
         # Invoke the NMS for segmentation masks method for filtering predictions
-        if len(self.detected_masks_list_full)>0:
+        if len(self.detected_masks_list_full) > 0:
 
             self.filtered_indices = self.nms(
                 self.detected_conf_list_full,
@@ -96,11 +96,13 @@ class CombineDetections:
         self.filtered_classes_id = [self.detected_cls_id_list_full[i] for i in self.filtered_indices]
         self.filtered_classes_names = [self.detected_cls_names_list_full[i] for i in self.filtered_indices]
 
+        # Masks filtering:
         if element_crops.segment and not element_crops.memory_optimize:
             self.filtered_masks = [self.detected_masks_list_full[i] for i in self.filtered_indices]
         else:
             self.filtered_masks = []
         
+        # Polygons filtering:
         if element_crops.segment and element_crops.memory_optimize:
             self.filtered_polygons = [self.detected_polygons_list_full[i] for i in self.filtered_indices]
         else:

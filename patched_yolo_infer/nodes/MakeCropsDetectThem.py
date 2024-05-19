@@ -62,7 +62,7 @@ class MakeCropsDetectThem:
         classes_list=None,
         segment=False,
         shape_x=700,
-        shape_y=700,
+        shape_y=600,
         overlap_x=25,
         overlap_y=25,
         show_crops=False,
