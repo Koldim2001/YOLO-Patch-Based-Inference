@@ -68,7 +68,7 @@ class MakeCropsDetectThem:
         show_crops=False,
         resize_initial_size=False,
         model=None,
-        memory_optimize=False
+        memory_optimize=True
     ) -> None:
         if model is None:
             self.model = YOLO(model_path)  # Load the model from the specified path

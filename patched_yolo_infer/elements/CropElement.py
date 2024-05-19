@@ -100,6 +100,7 @@ class CropElement:
         # from source_image_resized to source_image sizes transformation
         resized_xyxy = []
         resized_masks = []
+        resized_polygons = []
 
         for bbox in self.detected_xyxy_real:
             # Resize bbox coordinates
@@ -116,5 +117,12 @@ class CropElement:
                                     interpolation=cv2.INTER_NEAREST)
             resized_masks.append(mask_resized)
 
+
+        for polygon in self.detected_polygons_real:
+            polygon[:, 0] = (polygon[:, 0] * (self.source_image.shape[1] / self.source_image_resized.shape[1])).astype(np.uint16)
+            polygon[:, 1] = (polygon[:, 1] * (self.source_image.shape[0] / self.source_image_resized.shape[0])).astype(np.uint16)
+            resized_polygons.append(polygon)
+
         self.detected_xyxy_real = resized_xyxy
         self.detected_masks_real = resized_masks
+        self.detected_polygons_real = resized_polygons
