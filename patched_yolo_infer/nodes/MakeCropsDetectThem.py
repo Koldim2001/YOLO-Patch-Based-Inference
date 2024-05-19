@@ -29,6 +29,7 @@ class MakeCropsDetectThem:
                                     image size (ps: slow operation).
         model: Pre-initialized model object. If provided, the model will be used directly 
                    instead of loading from model_path.
+        memory_optimize (bool): Memory optimization option for segmentation (less accurate results)
 
     Attributes:
         model: YOLOv8 model loaded from the specified path.
@@ -48,6 +49,7 @@ class MakeCropsDetectThem:
         resize_initial_size (bool): Whether to resize the results to the original  
                                     image size (ps: slow operation).
         class_names_dict (dict): Dictionary containing class names of the YOLO model.
+        memory_optimize (bool): Memory optimization option for segmentation (less accurate results)
     """
 
     def __init__(
@@ -60,12 +62,13 @@ class MakeCropsDetectThem:
         classes_list=None,
         segment=False,
         shape_x=700,
-        shape_y=700,
+        shape_y=600,
         overlap_x=25,
         overlap_y=25,
         show_crops=False,
         resize_initial_size=False,
         model=None,
+        memory_optimize=True
     ) -> None:
         if model is None:
             self.model = YOLO(model_path)  # Load the model from the specified path
@@ -84,6 +87,7 @@ class MakeCropsDetectThem:
         self.crops = []  # List to store the CropElement objects
         self.show_crops = show_crops  # Whether to visualize the cropping
         self.resize_initial_size = resize_initial_size  # slow operation !
+        self.memory_optimize = memory_optimize # memory opimization option for segmentation
         self.class_names_dict = self.model.names
 
         self.crops = self.get_crops_xy(
@@ -195,6 +199,7 @@ class MakeCropsDetectThem:
                 iou=self.iou,
                 segment=self.segment,
                 classes_list=self.classes_list,
+                memory_optimize=self.memory_optimize
             )
             crop.calculate_real_values()
             if self.resize_initial_size:

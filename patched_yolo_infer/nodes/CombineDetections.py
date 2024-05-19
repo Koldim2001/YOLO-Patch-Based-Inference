@@ -25,6 +25,7 @@ class CombineDetections:
         detected_conf_list_full (list): List of detected confidences.
         detected_xyxy_list_full (list): List of detected bounding boxes.
         detected_masks_list_full (list): List of detected masks.
+        detected_polygons_list_full (list): List of detected polygons when memory optimization is enabled.
         detected_cls_id_list_full (list): List of detected class IDs.
         detected_cls_names_list_full (list): List of detected class names.
         filtered_indices (list): List of indices after non-maximum suppression.
@@ -33,6 +34,7 @@ class CombineDetections:
         filtered_classes_id (list): List of class IDs after non-maximum suppression.
         filtered_classes_names (list): List of class names after non-maximum suppression.
         filtered_masks (list): List of filtered (after nms) masks if segmentation is enabled.
+        filtered_polygons (list): List of filtered (after nms) polygons if segmentation and memory optimization are enabled.
     """
 
     def __init__(
@@ -54,12 +56,13 @@ class CombineDetections:
         self.match_metric = match_metric 
         self.intelligent_sorter = intelligent_sorter # enable sorting by area and confidence parameter
 
-        # combinate detections of all patches
+        # Combinate detections of all patches
         (
             self.detected_conf_list_full,
             self.detected_xyxy_list_full,
             self.detected_masks_list_full,
-            self.detected_cls_id_list_full
+            self.detected_cls_id_list_full,
+            self.detected_polygons_list_full
         ) = self.combinate_detections(crops=self.crops)
 
         self.detected_cls_names_list_full = [
@@ -67,7 +70,7 @@ class CombineDetections:
         ]  # make str list
 
         # Invoke the NMS for segmentation masks method for filtering predictions
-        if len(self.detected_masks_list_full)>0:
+        if len(self.detected_masks_list_full) > 0:
 
             self.filtered_indices = self.nms(
                 self.detected_conf_list_full,
@@ -93,10 +96,17 @@ class CombineDetections:
         self.filtered_classes_id = [self.detected_cls_id_list_full[i] for i in self.filtered_indices]
         self.filtered_classes_names = [self.detected_cls_names_list_full[i] for i in self.filtered_indices]
 
-        if element_crops.segment:
+        # Masks filtering:
+        if element_crops.segment and not element_crops.memory_optimize:
             self.filtered_masks = [self.detected_masks_list_full[i] for i in self.filtered_indices]
         else:
             self.filtered_masks = []
+        
+        # Polygons filtering:
+        if element_crops.segment and element_crops.memory_optimize:
+            self.filtered_polygons = [self.detected_polygons_list_full[i] for i in self.filtered_indices]
+        else:
+            self.filtered_polygons = []
 
     def combinate_detections(self, crops):
         """
@@ -113,14 +123,16 @@ class CombineDetections:
         detected_xyxy = []
         detected_masks = []
         detected_cls = []
+        detected_polygons = []
 
         for crop in crops:
             detected_conf.extend(crop.detected_conf)
             detected_xyxy.extend(crop.detected_xyxy_real)
             detected_masks.extend(crop.detected_masks_real)
             detected_cls.extend(crop.detected_cls)
+            detected_polygons.extend(crop.detected_polygons_real)
 
-        return detected_conf, detected_xyxy, detected_masks, detected_cls
+        return detected_conf, detected_xyxy, detected_masks, detected_cls, detected_polygons
 
     @staticmethod
     def intersect_over_union(mask, masks_list):

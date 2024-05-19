@@ -25,14 +25,16 @@ class CropElement:
         self.detected_cls = None  # List of classes of detected objects
         self.detected_xyxy = None  # List of lists containing xyxy box coordinates
         self.detected_masks = None # List of np arrays containing masks in case of yolo-seg
+        self.polygons = None # List of polygons points in case of using memory optimaze
         
         # Refined coordinates according to crop position information
         self.detected_xyxy_real = None  # List of lists containing xyxy box coordinates in values from source_image_resized or source_image
         self.detected_masks_real = None # List of np arrays containing masks in case of yolo-seg with the size of source_image_resized or source_image
+        self.detected_polygons_real = None # List of polygons points in case of using memory optimaze in values from source_image_resized or source_image
 
-    def calculate_inference(self, model, imgsz=640, conf=0.35, iou=0.7, segment=False, classes_list=None):
+    def calculate_inference(self, model, imgsz=640, conf=0.35, iou=0.7, segment=False, classes_list=None, memory_optimize=False):
+
         # Perform inference
-
         predictions = model.predict(self.crop, imgsz=imgsz, conf=conf, iou=iou, classes=classes_list, verbose=False)
 
         pred = predictions[0]
@@ -47,8 +49,13 @@ class CropElement:
         self.detected_conf = pred.boxes.conf.cpu().numpy()
 
         if segment and len(self.detected_cls) != 0:
-            # Get the masks
-            self.detected_masks = pred.masks.data.cpu().numpy()
+            if memory_optimize:
+                # Get the polygons
+                self.polygons = [mask.astype(np.uint16) for mask in pred.masks.xy]
+            else:
+                # Get the masks
+                self.detected_masks = pred.masks.data.cpu().numpy()
+            
 
     def calculate_real_values(self):
         # Calculate real values of bboxes and masks in source_image_resized
@@ -57,6 +64,7 @@ class CropElement:
 
         self.detected_xyxy_real = []  # List of lists with xyxy box coordinates in the values ​​of the source_image_resized
         self.detected_masks_real = []  # List of np arrays with masks in case of yolo-seg sized as source_image_resized
+        self.detected_polygons_real = [] # List of polygons in case of yolo-seg sized as source_image_resized
 
         for bbox in self.detected_xyxy:
             # Calculate real box coordinates based on the position information of the crop
@@ -81,10 +89,18 @@ class CropElement:
                 # Append the masked image to the list of detected_masks_real
                 self.detected_masks_real.append(black_image)
 
+        if self.polygons is not None:
+            # Adjust the mask coordinates
+            for mask in self.polygons:
+                mask[:, 0] += x_start_global  # Add x_start_global to all x coordinates
+                mask[:, 1] += y_start_global  # Add y_start_global to all y coordinates
+                self.detected_polygons_real.append(mask.astype(np.uint16))
+        
     def resize_results(self):
         # from source_image_resized to source_image sizes transformation
         resized_xyxy = []
         resized_masks = []
+        resized_polygons = []
 
         for bbox in self.detected_xyxy_real:
             # Resize bbox coordinates
@@ -101,5 +117,12 @@ class CropElement:
                                     interpolation=cv2.INTER_NEAREST)
             resized_masks.append(mask_resized)
 
+
+        for polygon in self.detected_polygons_real:
+            polygon[:, 0] = (polygon[:, 0] * (self.source_image.shape[1] / self.source_image_resized.shape[1])).astype(np.uint16)
+            polygon[:, 1] = (polygon[:, 1] * (self.source_image.shape[0] / self.source_image_resized.shape[0])).astype(np.uint16)
+            resized_polygons.append(polygon)
+
         self.detected_xyxy_real = resized_xyxy
         self.detected_masks_real = resized_masks
+        self.detected_polygons_real = resized_polygons
