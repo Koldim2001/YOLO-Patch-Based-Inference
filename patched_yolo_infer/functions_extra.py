@@ -369,7 +369,12 @@ def visualize_results(
                 points = np.array(polygons[i].reshape((-1, 1, 2)), dtype=np.int32)
                 cv2.drawContours(labeled_image, [points], -1, color, thickness)
                 if fill_mask:
-                    cv2.fillPoly(labeled_image, pts=[points], color=color)
+                    if alpha == 1:
+                        cv2.fillPoly(labeled_image, pts=[points], color=color)
+                    else:
+                        mask_from_poly = np.zeros_like(img)
+                        color_mask_from_poly = cv2.fillPoly(mask_from_poly, pts=[points], color=color)
+                        labeled_image = cv2.addWeighted(labeled_image, 1, color_mask_from_poly, alpha, 0)
 
         # Write class label
         if show_boxes:
