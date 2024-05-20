@@ -123,9 +123,12 @@ def visualize_results_usual_yolo_inference(
                 )
 
                 if fill_mask:
-                    color_mask = np.zeros_like(img)
-                    color_mask[mask_resized > 0] = color
-                    labeled_image = cv2.addWeighted(labeled_image, 1, color_mask, alpha, 0)
+                    if alpha == 1:
+                        cv2.fillPoly(labeled_image, pts=mask_contours, color=color)
+                    else:
+                        color_mask = np.zeros_like(img)
+                        color_mask[mask_resized > 0] = color
+                        labeled_image = cv2.addWeighted(labeled_image, 1, color_mask, alpha, 0)
 
                 cv2.drawContours(labeled_image, mask_contours, -1, color, thickness)
 
