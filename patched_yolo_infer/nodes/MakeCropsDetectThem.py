@@ -68,7 +68,8 @@ class MakeCropsDetectThem:
         show_crops=False,
         resize_initial_size=False,
         model=None,
-        memory_optimize=True
+        memory_optimize=True,
+        inference_extra_args=None,
     ) -> None:
         if model is None:
             self.model = YOLO(model_path)  # Load the model from the specified path
@@ -89,6 +90,7 @@ class MakeCropsDetectThem:
         self.resize_initial_size = resize_initial_size  # slow operation !
         self.memory_optimize = memory_optimize # memory opimization option for segmentation
         self.class_names_dict = self.model.names
+        self.inference_extra_args = inference_extra_args
 
         self.crops = self.get_crops_xy(
             self.image,
@@ -199,7 +201,8 @@ class MakeCropsDetectThem:
                 iou=self.iou,
                 segment=self.segment,
                 classes_list=self.classes_list,
-                memory_optimize=self.memory_optimize
+                memory_optimize=self.memory_optimize,
+                extra_args=self.inference_extra_args
             )
             crop.calculate_real_values()
             if self.resize_initial_size:
