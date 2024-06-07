@@ -35,6 +35,7 @@ class CropElement:
     def calculate_inference(self, model, imgsz=640, conf=0.35, iou=0.7, segment=False, classes_list=None, memory_optimize=False, extra_args=None):
 
         # Perform inference
+        extra_args = {} if extra_args is None else extra_args
         predictions = model.predict(self.crop, imgsz=imgsz, conf=conf, iou=iou, classes=classes_list, verbose=False, **extra_args)
 
         pred = predictions[0]
