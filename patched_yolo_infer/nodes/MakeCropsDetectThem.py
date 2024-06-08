@@ -50,8 +50,8 @@ class MakeCropsDetectThem:
                                     image size (ps: slow operation).
         class_names_dict (dict): Dictionary containing class names of the YOLO model.
         memory_optimize (bool): Memory optimization option for segmentation (less accurate results)
+        inference_extra_args (dict): Dictionary with extra ultralytics inference parameters
     """
-
     def __init__(
         self,
         image: np.ndarray,
@@ -89,8 +89,8 @@ class MakeCropsDetectThem:
         self.show_crops = show_crops  # Whether to visualize the cropping
         self.resize_initial_size = resize_initial_size  # slow operation !
         self.memory_optimize = memory_optimize # memory opimization option for segmentation
-        self.class_names_dict = self.model.names
-        self.inference_extra_args = inference_extra_args
+        self.class_names_dict = self.model.names # dict with human-readable class names
+        self.inference_extra_args = inference_extra_args # dict with extra ultralytics inference parameters
 
         self.crops = self.get_crops_xy(
             self.image,
