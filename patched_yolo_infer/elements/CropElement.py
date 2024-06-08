@@ -32,10 +32,11 @@ class CropElement:
         self.detected_masks_real = None # List of np arrays containing masks in case of yolo-seg with the size of source_image_resized or source_image
         self.detected_polygons_real = None # List of polygons points in case of using memory optimaze in values from source_image_resized or source_image
 
-    def calculate_inference(self, model, imgsz=640, conf=0.35, iou=0.7, segment=False, classes_list=None, memory_optimize=False):
+    def calculate_inference(self, model, imgsz=640, conf=0.35, iou=0.7, segment=False, classes_list=None, memory_optimize=False, extra_args=None):
 
         # Perform inference
-        predictions = model.predict(self.crop, imgsz=imgsz, conf=conf, iou=iou, classes=classes_list, verbose=False)
+        extra_args = {} if extra_args is None else extra_args
+        predictions = model.predict(self.crop, imgsz=imgsz, conf=conf, iou=iou, classes=classes_list, verbose=False, **extra_args)
 
         pred = predictions[0]
 
