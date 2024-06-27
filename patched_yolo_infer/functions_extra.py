@@ -27,7 +27,8 @@ def visualize_results_usual_yolo_inference(
     show_confidences=False,
     axis_off=True,
     show_classes_list=[],
-    return_image_array=False
+    return_image_array=False,
+    inference_extra_args=None,
 ):
     """
     Visualizes the results of usual YOLOv8 or YOLOv8-seg inference on an image
@@ -54,6 +55,7 @@ def visualize_results_usual_yolo_inference(
         show_confidences (bool): If True and show_class=True, confidences near class are visualized.
         axis_off (bool): If True, axis is turned off in the final visualization.
         show_classes_list (list): If empty, visualize all classes. Otherwise, visualize only classes in the list.
+        inference_extra_args (dict/None): Dictionary with extra ultralytics inference parameters.
         return_image_array (bool): If True, the function returns the image bgr array instead of displaying it. 
                                    Default is False.
 
@@ -62,7 +64,8 @@ def visualize_results_usual_yolo_inference(
     """
 
     # Perform inference
-    predictions = model.predict(img, imgsz=imgsz, conf=conf, iou=iou, verbose=False)
+    extra_args = {} if inference_extra_args is None else inference_extra_args
+    predictions = model.predict(img, imgsz=imgsz, conf=conf, iou=iou, verbose=False, **extra_args)
 
     labeled_image = img.copy()
 
