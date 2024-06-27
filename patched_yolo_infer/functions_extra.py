@@ -69,10 +69,10 @@ def visualize_results_usual_yolo_inference(
     if random_object_colors:
         random.seed(int(delta_colors))
 
+    class_names = model.names
+
     # Process each prediction
     for pred in predictions:
-
-        class_names = pred.names
 
         # Get the bounding boxes and convert them to a list of lists
         boxes = pred.boxes.xyxy.cpu().int().tolist()
@@ -86,11 +86,11 @@ def visualize_results_usual_yolo_inference(
         num_objects = len(classes)
 
         if segment:
-            # Get the masks
+            # Get the polygons
             try:
-                masks = pred.masks.data.cpu().numpy()
+                polygons = pred.masks.xy
             except:
-                masks = []
+                polygons = []
 
         # Visualization
         for i in range(num_objects):
@@ -111,26 +111,17 @@ def visualize_results_usual_yolo_inference(
             box = boxes[i]
             x_min, y_min, x_max, y_max = box
 
-            if segment:
-                mask = masks[i]
-                # Resize mask to the size of the original image using nearest neighbor interpolation
-                mask_resized = cv2.resize(
-                    np.array(mask), (img.shape[1], img.shape[0]), interpolation=cv2.INTER_NEAREST
-                )
-                # Add label to the mask
-                mask_contours, _ = cv2.findContours(
-                    mask_resized.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-                )
-
-                if fill_mask:
-                    if alpha == 1:
-                        cv2.fillPoly(labeled_image, pts=mask_contours, color=color)
-                    else:
-                        color_mask = np.zeros_like(img)
-                        color_mask[mask_resized > 0] = color
-                        labeled_image = cv2.addWeighted(labeled_image, 1, color_mask, alpha, 0)
-
-                cv2.drawContours(labeled_image, mask_contours, -1, color, thickness)
+            if segment and len(polygons) > 0:
+                if len(polygons[i]) > 0:
+                    points = np.array(polygons[i].reshape((-1, 1, 2)), dtype=np.int32)
+                    if fill_mask:
+                        if alpha == 1:
+                            cv2.fillPoly(labeled_image, pts=[points], color=color)
+                        else:
+                            mask_from_poly = np.zeros_like(img)
+                            color_mask_from_poly = cv2.fillPoly(mask_from_poly, pts=[points], color=color)
+                            labeled_image = cv2.addWeighted(labeled_image, 1, color_mask_from_poly, alpha, 0)
+                    cv2.drawContours(labeled_image, [points], -1, color, thickness)
 
             # Write class label
             if show_boxes:
