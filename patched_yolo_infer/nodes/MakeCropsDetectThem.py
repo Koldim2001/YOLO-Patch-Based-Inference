@@ -70,6 +70,7 @@ class MakeCropsDetectThem:
         model=None,
         memory_optimize=True,
         inference_extra_args=None,
+        batch_inference=False,
     ) -> None:
         if model is None:
             self.model = YOLO(model_path)  # Load the model from the specified path
@@ -91,6 +92,7 @@ class MakeCropsDetectThem:
         self.memory_optimize = memory_optimize # memory opimization option for segmentation
         self.class_names_dict = self.model.names # dict with human-readable class names
         self.inference_extra_args = inference_extra_args # dict with extra ultralytics inference parameters
+        self.batch_inference = batch_inference
 
         self.crops = self.get_crops_xy(
             self.image,
@@ -100,7 +102,10 @@ class MakeCropsDetectThem:
             overlap_y=self.overlap_y,
             show=self.show_crops,
         )
-        self._detect_objects()
+        if self.batch_inference:
+            self._detect_objects_batch() 
+        else:
+            self._detect_objects()
 
     def get_crops_xy(
         self,
@@ -141,6 +146,7 @@ class MakeCropsDetectThem:
         x_new = round((x_steps-1) * (shape_x * cross_koef_x) + shape_x)
         image_innitial = image_full.copy()
         image_full = cv2.resize(image_full, (x_new, y_new))
+        batch_of_crops = []
 
         if show:
             plt.figure(figsize=[x_steps*0.9, y_steps*0.9])
@@ -176,12 +182,17 @@ class MakeCropsDetectThem:
                                         x_start=x_start,
                                         y_start=y_start,
                 ))
+                if self.batch_inference:
+                    batch_of_crops.append(im_temp)
 
         if show:
             plt.show()
             print('Number of generated images:', count)
 
-        return data_all_crops
+        if self.batch_inference:
+            return data_all_crops, batch_of_crops
+        else:
+            return data_all_crops
 
     def _detect_objects(self):
         """
@@ -207,3 +218,76 @@ class MakeCropsDetectThem:
             crop.calculate_real_values()
             if self.resize_initial_size:
                 crop.resize_results()
+
+    def _detect_objects_batch(self):
+        """
+        Method to detect objects in batch of crop.
+
+        This method performs batch inference using the YOLO model,
+        calculates real values, and optionally resizes the results.
+
+        Returns:
+            None
+        """
+        crops, batch = self.crops
+        self.crops = crops
+        self._calculate_batch_inference(
+            batch,
+            self.crops,
+            self.model,
+            imgsz=self.imgsz,
+            conf=self.conf,
+            iou=self.iou,
+            segment=self.segment,
+            classes_list=self.classes_list,
+            memory_optimize=self.memory_optimize,
+            extra_args=self.inference_extra_args
+        )
+        for crop in self.crops:
+            crop.calculate_real_values()
+            if self.resize_initial_size:
+                crop.resize_results()
+
+    def _calculate_batch_inference(
+        self,
+        batch,
+        crops,
+        model,
+        imgsz=640,
+        conf=0.35,
+        iou=0.7,
+        segment=False,
+        classes_list=None,
+        memory_optimize=False,
+        extra_args=None,
+    ):
+        # Perform inference
+        extra_args = {} if extra_args is None else extra_args
+        predictions = model.predict(
+            batch,
+            imgsz=imgsz,
+            conf=conf,
+            iou=iou,
+            classes=classes_list,
+            verbose=False,
+            **extra_args
+        )
+
+        for pred, crop in zip(predictions, crops):
+
+            # Get the bounding boxes and convert them to a list of lists
+            crop.detected_xyxy = pred.boxes.xyxy.cpu().int().tolist()
+
+            # Get the classes and convert them to a list
+            crop.detected_cls = pred.boxes.cls.cpu().int().tolist()
+
+            # Get the mask confidence scores
+            crop.detected_conf = pred.boxes.conf.cpu().numpy()
+
+            if segment and len(crop.detected_cls) != 0:
+                if memory_optimize:
+                    # Get the polygons
+                    crop.polygons = [mask.astype(np.uint16) for mask in pred.masks.xy]
+                else:
+                    # Get the masks
+                    crop.detected_masks = pred.masks.data.cpu().numpy()
