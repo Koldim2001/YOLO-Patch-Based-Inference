@@ -50,6 +50,8 @@ class MakeCropsDetectThem:
                                     image size (ps: slow operation).
         class_names_dict (dict): Dictionary containing class names of the YOLO model.
         memory_optimize (bool): Memory optimization option for segmentation (less accurate results)
+        batch_inference (bool): Batch inference of image crops through a neural network instead of 
+                                    sequential passes of crops (ps: Faster inference, higher memory use)
         inference_extra_args (dict): Dictionary with extra ultralytics inference parameters
     """
     def __init__(
@@ -92,7 +94,7 @@ class MakeCropsDetectThem:
         self.memory_optimize = memory_optimize # memory opimization option for segmentation
         self.class_names_dict = self.model.names # dict with human-readable class names
         self.inference_extra_args = inference_extra_args # dict with extra ultralytics inference parameters
-        self.batch_inference = batch_inference
+        self.batch_inference = batch_inference # batch inference of image crops through a neural network
 
         self.crops = self.get_crops_xy(
             self.image,
@@ -221,7 +223,7 @@ class MakeCropsDetectThem:
 
     def _detect_objects_batch(self):
         """
-        Method to detect objects in batch of crop.
+        Method to detect objects in batch of image crops.
 
         This method performs batch inference using the YOLO model,
         calculates real values, and optionally resizes the results.
@@ -261,7 +263,7 @@ class MakeCropsDetectThem:
         memory_optimize=False,
         extra_args=None,
     ):
-        # Perform inference
+        # Perform batch inference of image crops through a neural network
         extra_args = {} if extra_args is None else extra_args
         predictions = model.predict(
             batch,
