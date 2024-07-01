@@ -30,6 +30,9 @@ class MakeCropsDetectThem:
         model: Pre-initialized model object. If provided, the model will be used directly 
                    instead of loading from model_path.
         memory_optimize (bool): Memory optimization option for segmentation (less accurate results)
+        batch_inference (bool): Batch inference of image crops through a neural network instead of 
+                    sequential passes of crops (ps: Faster inference, higher memory use)
+        inference_extra_args (dict): Dictionary with extra ultralytics inference parameters
 
     Attributes:
         model: YOLOv8 model loaded from the specified path.
