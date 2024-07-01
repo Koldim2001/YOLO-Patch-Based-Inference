@@ -8,8 +8,8 @@ with codecs.open(os.path.join(pwd, "patched_yolo_infer/README.md"), encoding="ut
     long_description = "\n" + fh.read()
 
 
-VERSION = '1.2.6'
-DESCRIPTION = '''YOLO-Patch-Based-Inference for detection/segmentation of small objects in images.'''
+VERSION = '1.2.7'
+DESCRIPTION = '''Patch-Based-Inference for detection/segmentation of small objects in images.'''
 
 setup(
     name="patched_yolo_infer",
@@ -23,7 +23,7 @@ setup(
     packages=find_packages(),
     python_requires=">=3.8",
     install_requires=[
-        'numpy',
+        'numpy<2.0',
         'opencv-python',
         'matplotlib',
         'torch',
@@ -33,8 +33,10 @@ setup(
         "python",
         "yolov8",
         "yolov9",
+        "yolov10",
         "rtdetr",
-        "sam",
+        "fastsam",
+        "sahi",
         "object detection",
         "instance segmentation",
         "patch-based inference",
