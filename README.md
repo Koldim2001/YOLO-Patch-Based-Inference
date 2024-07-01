@@ -121,6 +121,7 @@ Class implementing cropping and passing crops through a neural network for detec
 | resize_initial_size   | bool                   | False        | Whether to resize the results to the original input image size (ps: slow operation).                           |
 | memory_optimize       | bool                   | True         | Memory optimization option for segmentation (less accurate results when enabled).                              |
 | inference_extra_args  | dict                   | None         | Dictionary with extra ultralytics [inference parameters](https://docs.ultralytics.com/modes/predict/#inference-arguments) (possible keys: half, device, max_det, augment, agnostic_nms and retina_masks) |
+| batch_inference       | bool                   | False        | Batch inference of image crops through a neural network instead of sequential passes of crops (ps: faster inference, higher gpu memory use).                           |
 
 
 **CombineDetections**
