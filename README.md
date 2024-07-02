@@ -224,7 +224,7 @@ classes_names=result.filtered_classes_names
 [nb_example1]: https://nbviewer.org/github/Koldim2001/YOLO-Patch-Based-Inference/blob/main/examples/example_patch_based_inference.ipynb
 [colab_badge]: https://colab.research.google.com/assets/colab-badge.svg
 [colab_ex1]: https://colab.research.google.com/drive/1XCpIYLMFEmGSO0XCOkSD7CcD9SFHSJPA?usp=sharing
-[yt_link1]: https://youtu.be/IfbNOLROym4
+[yt_link1]: https://www.youtube.com/watch?v=kMfzWd8GK5Y
 [nb_example2]: https://nbviewer.org/github/Koldim2001/YOLO-Patch-Based-Inference/blob/main/examples/example_extra_functions.ipynb
 [colab_ex2]: https://colab.research.google.com/drive/1eM4o1e0AUQrS1mLDpcgK9HKInWEvnaMn?usp=sharing
-[yt_link2]: https://youtu.be/nBQuWa63188
+[yt_link2]: https://www.youtube.com/watch?v=nBQuWa63188
