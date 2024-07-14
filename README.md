@@ -87,7 +87,7 @@ element_crops = MakeCropsDetectThem(
     iou=0.7,
     resize_initial_size=True,
 )
-result = CombineDetections(element_crops, nms_threshold=0.25, match_metric='IOS')  
+result = CombineDetections(element_crops, nms_threshold=0.25)  
 
 # Final Results:
 img=result.image
@@ -190,7 +190,7 @@ visualize_results(
 ---
 ---
 
-## __HOW TO IMPROVE THE QUALITY OF THE ALGORITHM FOR THE TASK OF INSTANCE SEGMENTATION:__
+## __How to improve the quality of the algorithm for the task of instance segmentation:__
 
 In this approach, all operations under the hood are performed on binary masks of recognized objects. Storing these masks consumes a lot of memory, so this method requires more RAM and slightly more processing time. However, the accuracy of recognition significantly improves, which is especially noticeable in cases where there are many objects of different sizes and they are densely packed. Therefore, we recommend using this approach in production if accuracy is important and not speed, and if your computational resources allow storing hundreds of binary masks in RAM.
 
@@ -220,6 +220,7 @@ classes_ids=result.filtered_classes_id
 classes_names=result.filtered_classes_names
 ```
 
+An example of working with this mode is presented in Google Color notebook - [![Open In Colab][colab_badge]][colab_ex1_memory_optimize]
 
 [nb_example1]: https://nbviewer.org/github/Koldim2001/YOLO-Patch-Based-Inference/blob/main/examples/example_patch_based_inference.ipynb
 [colab_badge]: https://colab.research.google.com/assets/colab-badge.svg
@@ -228,3 +229,4 @@ classes_names=result.filtered_classes_names
 [nb_example2]: https://nbviewer.org/github/Koldim2001/YOLO-Patch-Based-Inference/blob/main/examples/example_extra_functions.ipynb
 [colab_ex2]: https://colab.research.google.com/drive/1eM4o1e0AUQrS1mLDpcgK9HKInWEvnaMn?usp=sharing
 [yt_link2]: https://www.youtube.com/watch?v=nBQuWa63188
+[colab_ex1_memory_optimize]: https://colab.research.google.com/drive/1XCpIYLMFEmGSO0XCOkSD7CcD9SFHSJPA?usp=sharing#scrollTo=DM_eCc3yXzXW
