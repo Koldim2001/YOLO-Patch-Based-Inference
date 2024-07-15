@@ -30,7 +30,7 @@ Interactive notebooks are provided to showcase the functionality of the library.
 | **Topic** | **Notebook** | **YouTube** |
 | ----- | -------- | ------- |
 | [Patch-Based-Inference Example][nb_example1] | [![Open In Colab][colab_badge]][colab_ex1] |<div align="center">[<img width=30% alt="Youtube Video" src=https://raw.githubusercontent.com/ultralytics/assets/main/social/logo-social-youtube-rect.png>][yt_link1] |
-| [Example of utilizing a function to visualize basic Ultralytics model inference results and managing overlapping image crops][nb_example2] | [![Open In Colab][colab_badge]][colab_ex2] | <div align="center">[<img width=30% alt="Youtube Video" src=https://raw.githubusercontent.com/ultralytics/assets/main/social/logo-social-youtube-rect.png>][yt_link2] |
+| [Example of custom visualization of usual inference results][nb_example2] | [![Open In Colab][colab_badge]][colab_ex2] | <div align="center">[<img width=30% alt="Youtube Video" src=https://raw.githubusercontent.com/ultralytics/assets/main/social/logo-social-youtube-rect.png>][yt_link2] |
 
 
 For Russian users, there is a detailed video presentation of this project. YouTube video in Russian is available at this [__link__](https://youtu.be/ihch6pIZtQg).
@@ -188,6 +188,19 @@ visualize_results(
 ```
 
 ---
+## Tips for achieving the best Patch-Based-Inference results
+
+1. **Optimal Crop Size and Overlap**: Ensuring high-quality results involves carefully selecting the size of crops (patches) and their overlap. It is advisable not to create an excessive number of crops, and to set the overlap between 15% to 40%.
+
+2. **Visualizing Crops**: To review the crops generated, set `show_crops=True` during the initialization of the `MakeCropsDetectThem` element. This will display the number of patches and an image showing how these patches look based on your initialized parameters (`shape_x`, `shape_y`, `overlap_x`, and `overlap_y`).
+
+3. **Crop Size Considerations**: The size of each crop must exceed the size of the largest object intended to be detected in the image. Otherwise, the object may not be detected.
+
+4. **Enhancing Detection Within Patches**: To detect more objects within a single crop, increase the `imgsz` parameter and lower the confidence threshold (`conf`). All parameters available for configuring Ultralytics model inference are also accessible during the initialization of the `MakeCropsDetectThem` element.
+
+5. **Handling Duplicate Suppression Issues**: If you encounter issues with duplicate suppression from overlapping patches, consider adjusting the `nms_threshold` parameter in `CombineDetections` or modifying the overlap and size parameters of the patches themselves.
+
+6. **High-Quality Instance Segmentation**: For tasks requiring high-quality results in instance segmentation, detailed guidance is provided in the next section of the README.
 ---
 
 ## __How to improve the quality of the algorithm for the task of instance segmentation:__
