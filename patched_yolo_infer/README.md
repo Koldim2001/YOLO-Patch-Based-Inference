@@ -1,8 +1,10 @@
 # YOLO-Patch-Based-Inference
 
-This library facilitates various visualizations of inference results from ultralytics segmentation/detection models, including cropping with overlays, as well as **a patch-based inference algorithm enabling the detection/instance segmentation of small objects in images**. 
+This Python library simplifies SAHI-like inference for instance segmentation tasks, enabling the detection of small objects in images. It caters to both object detection and instance segmentation tasks, supporting a wide range of Ultralytics models. 
 
-**Model Support**: The library offers support for multiple ultralytics deep learning models, such as YOLOv8, YOLOv9, SAM, and RTDETR. Users can select from pre-trained options or utilize custom-trained models to best meet their task requirements.
+The library also provides a sleek customization of the visualization of the inference results for all models, both in the standard approach (direct network run) and the unique patch-based variant.
+
+**Model Support**: The library offers support for multiple ultralytics deep learning [models](https://docs.ultralytics.com/models/), such as YOLOv8, YOLOv8-seg, YOLOv9, YOLOv9-seg, YOLOv10, FastSAM, and RTDETR. Users can select from pre-trained options or utilize custom-trained models to best meet their task requirements.
 
 
 ## Installation
@@ -25,7 +27,7 @@ __Check this Colab examples:__
                          
 Patch-Based-Inference Example - [Open in Colab](https://colab.research.google.com/drive/1XCpIYLMFEmGSO0XCOkSD7CcD9SFHSJPA?usp=sharing)
 
-Example of using various functions for visualizing basic YOLOv8/v9 inference results and handling overlapping crops - [Open in Colab](https://colab.research.google.com/drive/1eM4o1e0AUQrS1mLDpcgK9HKInWEvnaMn?usp=sharing)
+Example of using various functions for visualizing basic YOLOv8/v9 inference results - [Open in Colab](https://colab.research.google.com/drive/1eM4o1e0AUQrS1mLDpcgK9HKInWEvnaMn?usp=sharing)
 
 
 ## Usage
@@ -67,7 +69,7 @@ element_crops = MakeCropsDetectThem(
     iou=0.7,
     resize_initial_size=True,
 )
-result = CombineDetections(element_crops, nms_threshold=0.25, match_metric='IOS')  
+result = CombineDetections(element_crops, nms_threshold=0.25)  
 
 # Final Results:
 img=result.image
@@ -108,7 +110,7 @@ Class implementing combining masks/boxes from multiple crops + NMS (Non-Maximum 
 - **nms_threshold** (*float*): IoU/IoS threshold for non-maximum suppression.
 - **match_metric** (*str*): Matching metric, either 'IOU' or 'IOS'.
 - **intelligent_sorter** (*bool*): Enable sorting by area and rounded confidence parameter. If False, sorting will be done only by confidence (usual nms). (Dafault is True)
-
+- **sorter_bins** (*int*): Number of bins to use for intelligent_sorter. A smaller number of bins makes the NMS more reliant on object sizes rather than confidence scores. (Defaults to 10)
 
 
 ---

@@ -130,9 +130,11 @@ Class implementing combining masks/boxes from multiple crops + NMS (Non-Maximum 
 | **Argument**         | **Type**          | **Default** | **Description**                                                                                                         |
 |----------------------|-------------------|-------------|-------------------------------------------------------------------------------------------------------------------------|
 | element_crops        |MakeCropsDetectThem|             | Object containing crop information.                                                                                     |
-| nms_threshold        | float             | 0.3         | IoU/IoS threshold for non-maximum suppression.                                                                          |
+| nms_threshold        | float             | 0.3         | IoU/IoS threshold for non-maximum suppression. The lower the value, the fewer objects remain after suppression.                                                                          |
 | match_metric         | str               | IOS         | Matching metric, either 'IOU' or 'IOS'.                                                                                 |
 | intelligent_sorter   | bool              | True        | Enable sorting by area and rounded confidence parameter. If False, sorting will be done only by confidence (usual nms). |
+| sorter_bins          | int               | 10          | Number of bins to use for intelligent_sorter. A smaller number of bins makes the NMS more reliant on object sizes rather than confidence scores. |
+
 
 
 ---
@@ -198,7 +200,7 @@ visualize_results(
 
 4. **Enhancing Detection Within Patches**: To detect more objects within a single crop, increase the `imgsz` parameter and lower the confidence threshold (`conf`). All parameters available for configuring Ultralytics model inference are also accessible during the initialization of the `MakeCropsDetectThem` element.
 
-5. **Handling Duplicate Suppression Issues**: If you encounter issues with duplicate suppression from overlapping patches, consider adjusting the `nms_threshold` parameter in `CombineDetections` or modifying the overlap and size parameters of the patches themselves.
+5. **Handling Duplicate Suppression Issues**: If you encounter issues with duplicate suppression from overlapping patches, consider adjusting the `nms_threshold` and `sorter_bins` parameters in `CombineDetections` or modifying the overlap and size parameters of the patches themselves. (PS: often lowering `sorter_bins` to 5 or 4 can help).
 
 6. **High-Quality Instance Segmentation**: For tasks requiring high-quality results in instance segmentation, detailed guidance is provided in the next section of the README.
 ---
