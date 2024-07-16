@@ -13,6 +13,8 @@ class CombineDetections:
         match_metric (str): Matching metric, either 'IOU' or 'IOS'.
         intelligent_sorter (bool): Enable sorting by area and rounded confidence parameter. 
             If False, sorting will be done only by confidence (usual nms). (Dafault True)
+        sorter_bins (int): Number of bins to use for intelligent_sorter. A smaller number of bins makes
+            the NMS more reliant on object sizes rather than confidence scores. Defaults to 10.
 
     Attributes:
         conf_treshold (float): Confidence threshold of yolov8.
@@ -22,6 +24,7 @@ class CombineDetections:
         nms_threshold (float): IOU/IOS threshold for non-maximum suppression.
         match_metric (str): Matching metric (IOU/IOS).
         intelligent_sorter (bool): Flag indicating whether sorting by area and confidence parameter is enabled.
+        sorter_bins (int): Number of bins to use for intelligent_sorter. 
         detected_conf_list_full (list): List of detected confidences.
         detected_xyxy_list_full (list): List of detected bounding boxes.
         detected_masks_list_full (list): List of detected masks.
@@ -42,7 +45,8 @@ class CombineDetections:
         element_crops: MakeCropsDetectThem,
         nms_threshold=0.3,
         match_metric='IOS',
-        intelligent_sorter=True
+        intelligent_sorter=True,
+        sorter_bins=10
     ) -> None:
         self.conf_treshold = element_crops.conf
         self.class_names = element_crops.class_names_dict 
@@ -55,6 +59,7 @@ class CombineDetections:
         self.nms_threshold = nms_threshold  # IOU or IOS treshold for NMS
         self.match_metric = match_metric 
         self.intelligent_sorter = intelligent_sorter # enable sorting by area and confidence parameter
+        self.sorter_bins = sorter_bins
 
         # Combinate detections of all patches
         (
@@ -133,6 +138,31 @@ class CombineDetections:
             detected_polygons.extend(crop.detected_polygons_real)
 
         return detected_conf, detected_xyxy, detected_masks, detected_cls, detected_polygons
+
+    @staticmethod
+    def average_to_bound(confidences, N=10):
+        """
+        Bins the given confidences into N equal intervals between 0 and 1, 
+        and rounds each confidence to the left boundary of the corresponding bin.
+
+        Parameters:
+        confidences (list or np.array): List of confidence values to be binned.
+        N (int, optional): Number of bins to use. Defaults to 10.
+
+        Returns:
+        list: List of rounded confidence values, each bound to the left boundary of its bin.
+        """
+        # Create the bounds
+        step = 1 / N
+        bounds = np.arange(0, 1 + step, step)
+        
+        # Use np.digitize to determine the corresponding bin for each value
+        indices = np.digitize(confidences, bounds, right=True) - 1
+        
+        # Bind values to the left boundary of the corresponding bin
+        averaged_confidences = np.round(bounds[indices], 2) 
+        
+        return averaged_confidences.tolist()
 
     @staticmethod
     def intersect_over_union(mask, masks_list):
@@ -224,7 +254,7 @@ class CombineDetections:
             order = torch.tensor(
                 sorted(
                     range(len(confidences)),
-                    key=lambda k: (round(confidences[k].item(), 1), areas[k]),
+                    key=lambda k: (self.average_to_bound(confidences[k].item(), self.sorter_bins), areas[k]),
                     reverse=False,
                 )
             )
