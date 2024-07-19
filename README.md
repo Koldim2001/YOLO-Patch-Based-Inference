@@ -6,6 +6,12 @@ The library also provides a sleek customization of the visualization of the infe
 
 **Model Support**: The library offers support for multiple ultralytics deep learning [models](https://docs.ultralytics.com/models/), such as YOLOv8, YOLOv8-seg, YOLOv9, YOLOv9-seg, YOLOv10, FastSAM, and RTDETR. Users can select from pre-trained options or utilize custom-trained models to best meet their task requirements.
 
+__Explanation of how Patch-Based-Inference works:__
+
+<p align="center">
+  <img width="800" alt="patched_inf_explanation" src="readme_content/patched_inf_explanation.gif">
+</p>
+
 ## Installation
 You can install the library via pip:
 
