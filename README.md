@@ -9,7 +9,7 @@ The library also provides a sleek customization of the visualization of the infe
 __Explanation of how Patch-Based-Inference works:__
 
 <p align="center">
-  <img width="800" alt="patched_inf_explanation" src="readme_content/patched_inf_explanation.gif">
+  <img width="625" alt="patched_inf_explanation" src="readme_content/patched_inf_explanation.gif">
 </p>
 
 ## Installation
