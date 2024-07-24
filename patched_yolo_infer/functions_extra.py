@@ -27,6 +27,7 @@ def visualize_results_usual_yolo_inference(
     show_confidences=False,
     axis_off=True,
     show_classes_list=[],
+    list_of_class_colors=None,
     return_image_array=False,
     inference_extra_args=None,
 ):
@@ -44,8 +45,8 @@ def visualize_results_usual_yolo_inference(
         show_class (bool): Whether to show class labels. Default is True.
         fill_mask (bool): Whether to fill the segmented regions with color. Default is False.
         alpha (float): The transparency of filled masks. Default is 0.3.
-        color_class_background (tuple): The background bgr color for class labels. Default is (0, 0, 255) (red).
-        color_class_text (tuple): The text color for class labels. Default is (255, 255, 255) (white).
+        color_class_background (tuple): The background BGR color for class labels. Default is (0, 0, 255) (red).
+        color_class_text (tuple): The text BGR color for class labels. Default is (255, 255, 255) (white).
         thickness (int): The thickness of bounding box and text. Default is 4.
         font: The font type for class labels. Default is cv2.FONT_HERSHEY_SIMPLEX.
         font_scale (float): The scale factor for font size. Default is 1.5.
@@ -56,6 +57,9 @@ def visualize_results_usual_yolo_inference(
         axis_off (bool): If True, axis is turned off in the final visualization.
         show_classes_list (list): If empty, visualize all classes. Otherwise, visualize only classes in the list.
         inference_extra_args (dict/None): Dictionary with extra ultralytics inference parameters.
+        list_of_class_colors (list/None): A list of tuples representing the colors for each class in BGR format. If provided,  
+                    these colors will be used for displaying the classes instead of random colors. The number of tuples 
+                    in the list must match the number of possible classes in the network.
         return_image_array (bool): If True, the function returns the image bgr array instead of displaying it. 
                                    Default is False.
 
@@ -278,6 +282,7 @@ def visualize_results(
     show_confidences=False,
     axis_off=True,
     show_classes_list=[],
+    list_of_class_colors=None,
     return_image_array=False
 ):
     """
@@ -295,8 +300,8 @@ def visualize_results(
         show_class (bool): Whether to show class labels. Default is True.
         fill_mask (bool): Whether to fill the segmented regions with color. Default is False.
         alpha (float): The transparency of filled masks. Default is 0.3.
-        color_class_background (tuple): The background bgr color for class labels. Default is (0, 0, 255) (red).
-        color_class_text (tuple): The text color for class labels. Default is (255, 255, 255) (white).
+        color_class_background (tuple): The background BGR color for class labels. Default is (0, 0, 255) (red).
+        color_class_text (tuple): The text BGR color for class labels. Default is (255, 255, 255) (white).
         thickness (int): The thickness of bounding box and text. Default is 4.
         font: The font type for class labels. Default is cv2.FONT_HERSHEY_SIMPLEX.
         font_scale (float): The scale factor for font size. Default is 1.5.
@@ -306,8 +311,10 @@ def visualize_results(
         show_confidences (bool): If true and show_class=True, confidences near class are visualized. Default is False.
         axis_off (bool): If true, axis is turned off in the final visualization. Default is True.
         show_classes_list (list): If empty, visualize all classes. Otherwise, visualize only classes in the list.
-        return_image_array (bool): If True, the function returns the image bgr array instead of displaying it. 
-                                   Default is False.
+        list_of_class_colors (list/None): A list of tuples representing the colors for each class in BGR format. If provided,  
+                    these colors will be used for displaying the classes instead of random colors. The number of tuples 
+                    in the list must match the number of possible classes in the network.
+        return_image_array (bool): If True, the function returns the image bgr array instead of displaying it. Default is False.
                                    
     Returns:
         None/np.array

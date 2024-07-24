@@ -7,6 +7,12 @@ The library also provides a sleek customization of the visualization of the infe
 **Model Support**: The library offers support for multiple ultralytics deep learning [models](https://docs.ultralytics.com/models/), such as YOLOv8, YOLOv8-seg, YOLOv9, YOLOv9-seg, YOLOv10, FastSAM, and RTDETR. Users can select from pre-trained options or utilize custom-trained models to best meet their task requirements.
 
 
+__Explanation of how Patch-Based-Inference works:__
+
+<p align="center">
+  <img width="600" alt="patched_inf_explanation" src="https://github.com/Koldim2001/YOLO-Patch-Based-Inference/blob/main/readme_content/patched_inf_explanation.gif?raw=true">
+</p>
+
 ## Installation
 You can install the library via pip:
 
@@ -141,6 +147,7 @@ Visualizes custom results of object detection or segmentation on an image.
 - **show_confidences** (*bool*): If true and show_class=True, confidences near class are visualized. Default is False.
 - **axis_off** (*bool*): If true, axis is turned off in the final visualization. Default is True.
 - **show_classes_list** (*list*): If empty, visualize all classes. Otherwise, visualize only classes in the list.
+- **list_of_class_colors** (*list*) A list of tuples representing the colors for each class in BGR format. If provided, these colors will be used for displaying the classes instead of random colors.
 - **return_image_array** (*bool*): If True, the function returns the image (BGR np.array) instead of displaying it. Default is False.
 
 
