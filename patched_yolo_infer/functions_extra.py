@@ -420,3 +420,43 @@ def visualize_results(
         if axis_off:
             plt.axis('off')
         plt.show()
+
+
+def create_masks_from_polygons(polygons, image):
+    """
+    Create binary masks from a list of polygons.
+
+    This function takes a list of polygons and an image, and generates binary masks
+    where each mask corresponds to one polygon. The masks are boolean arrays with
+    the same dimensions as the input image, where the regions covered by the polygons
+    are marked as True.
+
+    Parameters:
+    polygons (list of numpy.ndarray): A list of polygons, where each polygon is
+        represented as a numpy array of shape (N, 2) containing N (x, y) coordinates.
+    image (numpy.ndarray): The input image, used to determine the dimensions of the masks.
+
+    Returns:
+    list of numpy.ndarray: A list of binary masks, where each mask is a boolean
+        numpy array of the same dimensions as the input image.
+    """
+    # Get the dimensions of the image
+    height, width = image.shape[:2]
+    
+    # Create empty masks
+    masks = []
+    
+    for polygon in polygons:
+        if len(polygon) > 0:
+            points = np.array(polygon.reshape((-1, 1, 2)), dtype=np.int32)
+        
+        # Create an empty mask with the same size as the image
+        mask = np.zeros((height, width), dtype=np.uint8)
+        
+        # Draw the polygon on the mask
+        cv2.fillPoly(mask, [points], 1)
+        
+        # Add the mask to the list
+        masks.append(mask)
+    
+    return masks
