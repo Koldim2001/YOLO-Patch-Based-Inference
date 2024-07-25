@@ -55,7 +55,7 @@ class CropElement:
                 self.polygons = [mask.astype(np.uint16) for mask in pred.masks.xy]
             else:
                 # Get the masks
-                self.detected_masks = pred.masks.data.cpu().numpy()
+                self.detected_masks = pred.masks.data.cpu().numpy().astype(np.uint8)
             
 
     def calculate_real_values(self):
@@ -88,7 +88,7 @@ class CropElement:
                             x_start_global:x_start_global+self.crop.shape[1]] = mask_resized
 
                 # Append the masked image to the list of detected_masks_real
-                self.detected_masks_real.append(black_image)
+                self.detected_masks_real.append(black_image.astype(np.uint8))
 
         if self.polygons is not None:
             # Adjust the mask coordinates
@@ -116,7 +116,7 @@ class CropElement:
             # Resize mask
             mask_resized = cv2.resize(mask, (self.source_image.shape[1], self.source_image.shape[0]),
                                     interpolation=cv2.INTER_NEAREST)
-            resized_masks.append(mask_resized)
+            resized_masks.append(mask_resized.astype(np.uint8))
 
 
         for polygon in self.detected_polygons_real:

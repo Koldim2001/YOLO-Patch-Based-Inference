@@ -172,7 +172,8 @@ Possible arguments of the ```visualize_results``` function:
 | random_object_colors    | bool            | False         | If true, colors for each object are selected randomly.                                        |
 | show_confidences        | bool            | False         | If true and show_class=True, confidences near class are visualized.                           |
 | axis_off                | bool            | True          | If true, axis is turned off in the final visualization.                                       |
-| show_classes_list       | list            | []            | If empty, visualize all classes. Otherwise, visualize only classes in the list.               |
+| show_classes_list       | list            | []            | If empty, visualize all classes. Otherwise, visualize only classes in the list.              |
+| list_of_class_colors      | list      | None         | A list of tuples representing the colors for each class in BGR format. If provided, these colors will be used for displaying the classes instead of random colors. |
 | return_image_array      | bool            | False         | If True, the function returns the image (BGR np.array) instead of displaying it.              |
 
 

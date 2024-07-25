@@ -27,6 +27,7 @@ def visualize_results_usual_yolo_inference(
     show_confidences=False,
     axis_off=True,
     show_classes_list=[],
+    list_of_class_colors=None,
     return_image_array=False,
     inference_extra_args=None,
 ):
@@ -44,8 +45,8 @@ def visualize_results_usual_yolo_inference(
         show_class (bool): Whether to show class labels. Default is True.
         fill_mask (bool): Whether to fill the segmented regions with color. Default is False.
         alpha (float): The transparency of filled masks. Default is 0.3.
-        color_class_background (tuple): The background bgr color for class labels. Default is (0, 0, 255) (red).
-        color_class_text (tuple): The text color for class labels. Default is (255, 255, 255) (white).
+        color_class_background (tuple): The background BGR color for class labels. Default is (0, 0, 255) (red).
+        color_class_text (tuple): The text BGR color for class labels. Default is (255, 255, 255) (white).
         thickness (int): The thickness of bounding box and text. Default is 4.
         font: The font type for class labels. Default is cv2.FONT_HERSHEY_SIMPLEX.
         font_scale (float): The scale factor for font size. Default is 1.5.
@@ -56,6 +57,9 @@ def visualize_results_usual_yolo_inference(
         axis_off (bool): If True, axis is turned off in the final visualization.
         show_classes_list (list): If empty, visualize all classes. Otherwise, visualize only classes in the list.
         inference_extra_args (dict/None): Dictionary with extra ultralytics inference parameters.
+        list_of_class_colors (list/None): A list of tuples representing the colors for each class in BGR format. If provided,  
+                    these colors will be used for displaying the classes instead of random colors. The number of tuples 
+                    in the list must match the number of possible classes in the network.
         return_image_array (bool): If True, the function returns the image bgr array instead of displaying it. 
                                    Default is False.
 
@@ -106,10 +110,12 @@ def visualize_results_usual_yolo_inference(
 
             if random_object_colors:
                 color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-            else:
+            elif list_of_class_colors is None:
                 # Assign color according to class
                 random.seed(int(classes[i] + delta_colors))
                 color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+            else:
+                color = list_of_class_colors[classes[i]]
 
             box = boxes[i]
             x_min, y_min, x_max, y_max = box
@@ -278,6 +284,7 @@ def visualize_results(
     show_confidences=False,
     axis_off=True,
     show_classes_list=[],
+    list_of_class_colors=None,
     return_image_array=False
 ):
     """
@@ -295,8 +302,8 @@ def visualize_results(
         show_class (bool): Whether to show class labels. Default is True.
         fill_mask (bool): Whether to fill the segmented regions with color. Default is False.
         alpha (float): The transparency of filled masks. Default is 0.3.
-        color_class_background (tuple): The background bgr color for class labels. Default is (0, 0, 255) (red).
-        color_class_text (tuple): The text color for class labels. Default is (255, 255, 255) (white).
+        color_class_background (tuple): The background BGR color for class labels. Default is (0, 0, 255) (red).
+        color_class_text (tuple): The text BGR color for class labels. Default is (255, 255, 255) (white).
         thickness (int): The thickness of bounding box and text. Default is 4.
         font: The font type for class labels. Default is cv2.FONT_HERSHEY_SIMPLEX.
         font_scale (float): The scale factor for font size. Default is 1.5.
@@ -306,8 +313,10 @@ def visualize_results(
         show_confidences (bool): If true and show_class=True, confidences near class are visualized. Default is False.
         axis_off (bool): If true, axis is turned off in the final visualization. Default is True.
         show_classes_list (list): If empty, visualize all classes. Otherwise, visualize only classes in the list.
-        return_image_array (bool): If True, the function returns the image bgr array instead of displaying it. 
-                                   Default is False.
+        list_of_class_colors (list/None): A list of tuples representing the colors for each class in BGR format. If provided,  
+                    these colors will be used for displaying the classes instead of random colors. The number of tuples 
+                    in the list must match the number of possible classes in the network.
+        return_image_array (bool): If True, the function returns the image bgr array instead of displaying it. Default is False.
                                    
     Returns:
         None/np.array
@@ -332,10 +341,12 @@ def visualize_results(
 
         if random_object_colors:
             color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-        else:
+        elif list_of_class_colors is None:
             # Assign color according to class
             random.seed(int(classes_ids[i] + delta_colors))
             color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+        else:
+            color = list_of_class_colors[classes_ids[i]]
 
         box = boxes[i]
         x_min, y_min, x_max, y_max = box
@@ -409,3 +420,43 @@ def visualize_results(
         if axis_off:
             plt.axis('off')
         plt.show()
+
+
+def create_masks_from_polygons(polygons, image):
+    """
+    Create binary masks from a list of polygons.
+
+    This function takes a list of polygons and an image, and generates binary masks
+    where each mask corresponds to one polygon. The masks are boolean arrays with
+    the same dimensions as the input image, where the regions covered by the polygons
+    are marked as True.
+
+    Parameters:
+    polygons (list of numpy.ndarray): A list of polygons, where each polygon is
+        represented as a numpy array of shape (N, 2) containing N (x, y) coordinates.
+    image (numpy.ndarray): The input image, used to determine the dimensions of the masks.
+
+    Returns:
+    list of numpy.ndarray: A list of binary masks, where each mask is a boolean
+        numpy array of the same dimensions as the input image.
+    """
+    # Get the dimensions of the image
+    height, width = image.shape[:2]
+    
+    # Create empty masks
+    masks = []
+    
+    for polygon in polygons:
+        if len(polygon) > 0:
+            points = np.array(polygon.reshape((-1, 1, 2)), dtype=np.int32)
+        
+        # Create an empty mask with the same size as the image
+        mask = np.zeros((height, width), dtype=np.uint8)
+        
+        # Draw the polygon on the mask
+        cv2.fillPoly(mask, [points], 1)
+        
+        # Add the mask to the list
+        masks.append(mask)
+    
+    return masks
