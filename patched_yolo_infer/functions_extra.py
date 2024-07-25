@@ -110,10 +110,12 @@ def visualize_results_usual_yolo_inference(
 
             if random_object_colors:
                 color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-            else:
+            elif list_of_class_colors is None:
                 # Assign color according to class
                 random.seed(int(classes[i] + delta_colors))
                 color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+            else:
+                color = list_of_class_colors[classes[i]]
 
             box = boxes[i]
             x_min, y_min, x_max, y_max = box
@@ -339,10 +341,12 @@ def visualize_results(
 
         if random_object_colors:
             color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
-        else:
+        elif list_of_class_colors is None:
             # Assign color according to class
             random.seed(int(classes_ids[i] + delta_colors))
             color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+        else:
+            color = list_of_class_colors[classes_ids[i]]
 
         box = boxes[i]
         x_min, y_min, x_max, y_max = box
