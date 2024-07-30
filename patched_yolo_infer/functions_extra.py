@@ -3,6 +3,7 @@ import cv2
 import random
 import numpy as np
 import matplotlib.pyplot as plt
+from ultralytics import YOLO
 
 
 def visualize_results_usual_yolo_inference(
@@ -460,3 +461,128 @@ def create_masks_from_polygons(polygons, image):
         masks.append(mask)
     
     return masks
+
+
+def basic_crop_size_calculation(width, height):
+    """
+    Calculate the basic crop size and overlap based on the image dimensions.
+
+    This function determines the optimal crop size and overlap for an image based on its width and height.
+    The function uses predefined thresholds to decide the crop size and overlap, ensuring efficient processing
+    for different image resolutions.
+
+    Parameters:
+    width (int): The width of the image in pixels.
+    height (int): The height of the image in pixels.
+
+    Returns:
+    tuple: A tuple containing the crop size in the x direction (crop_shape_x), crop size in the y direction (crop_shape_y),
+           overlap in the x direction (crop_overlap_x), and overlap in the y direction (crop_overlap_y).
+    """
+    total_pixels = width * height
+
+    if total_pixels <= 640*480:
+        crop_shape_x, crop_shape_y = width, height
+        crop_overlap_x, crop_overlap_y = 0, 0
+    elif total_pixels < 720*576:
+        crop_shape_x, crop_shape_y = int(width / 1.25), int(height / 1.25)
+        crop_overlap_x, crop_overlap_y = 50, 50
+    elif total_pixels < 1920*1080:
+        crop_shape_x, crop_shape_y = width // 2, height // 2
+        crop_overlap_x, crop_overlap_y = 40, 40
+    elif total_pixels < 3840*2160:
+        crop_shape_x, crop_shape_y = width // 3, height // 3
+        crop_overlap_x, crop_overlap_y = 30, 30
+    elif total_pixels < 7680*4320:
+        crop_shape_x, crop_shape_y = width // 4, height // 4
+        crop_overlap_x, crop_overlap_y = 25, 25
+    else:
+        crop_shape_x, crop_shape_y = width // 5, height // 5
+        crop_overlap_x, crop_overlap_y = 25, 25
+
+    return crop_shape_x, crop_shape_y, crop_overlap_x, crop_overlap_y
+
+
+def auto_calculation_crop_values(image, type="network_analysis", model=None, classes_list=None):
+    """
+    Automatically calculate the optimal crop size and overlap for an image.
+
+    This function determines the optimal crop size and overlap for an image based on either the image size
+    or the detected objects within the image. The function can use a YOLO model to detect objects and adjust
+    the crop size and overlap accordingly.
+
+    Parameters:
+    image (numpy.ndarray): The input image.
+    type (str): The type of analysis to perform. Can be "image_size_analysis" or "network_analysis". 
+        Default is "network_analysis".
+    model (YOLO): The YOLO model to use for object detection. If None, a default model yolov8m
+        will be loaded. Default is None.
+    classes_list (list): A list of class indices to consider for object detection. If None, all classes 
+        will be considered. Default is None.
+
+    Returns:
+    tuple: A tuple containing the crop size in the x direction (crop_shape_x), crop size in the y direction 
+        (crop_shape_y), overlap in the x direction (crop_overlap_x), and overlap in the y direction (crop_overlap_y).
+    """
+    height, width = image.shape[:2]
+    
+    # If the type is 'image_size_analysis', calculate crop size based on image dimensions
+    if type == 'image_size_analysis':
+        crop_shape_x, crop_shape_y, crop_overlap_x, crop_overlap_y = basic_crop_size_calculation(width, height)  
+    else:
+        # If no model is provided, load a default YOLO model
+        if model is None:
+            model = YOLO("yolov8m.pt")
+        
+        # Perform object detection on the image
+        result = model.predict(image, conf=0.25, iou=0.75, classes=classes_list, verbose=False)
+
+        # If no objects are detected, calculate crop size based on image dimensions
+        if len(result[0].boxes) == 0:
+            crop_shape_x, crop_shape_y, crop_overlap_x, crop_overlap_y = basic_crop_size_calculation(width, height) 
+            return crop_shape_x, crop_shape_y, crop_overlap_x, crop_overlap_y
+        
+        max_width = 0
+        max_height = 0
+        
+        # Iterate through detected boxes to find the maximum width and height
+        for box in result[0].boxes:
+            _, _, box_width, box_height = box.xywh[0].tolist()  
+            if box_width > max_width:
+                max_width = box_width
+            if box_height > max_height:
+                max_height = box_height
+
+        # Determine the maximum dimension (width or height) of the detected objects
+        max_value = max(box_height, max_width)
+        
+        # Adjust crop size and overlap based on the aspect ratio of the image and the maximum detected object dimension
+        if width > height:
+            crop_shape_x = int(max_value * 3)  
+            crop_shape_y = int(max_value * 2)
+            crop_overlap_x = int(max_width/crop_shape_x * 1.2 * 100)
+            crop_overlap_y = int(max_height/crop_shape_y * 1.2 * 100)
+        elif width < height:
+            crop_shape_x = int(max_value * 2)  
+            crop_shape_y = int(max_value * 3)
+            crop_overlap_x = int(max_width/crop_shape_x * 1.2 * 100)
+            crop_overlap_y = int(max_height/crop_shape_y * 1.2 * 100)
+        else:
+            crop_shape_x = int(max_value * 2.5)  
+            crop_shape_y = int(max_value * 2.5)
+            crop_overlap_x = int(max_width/crop_shape_x * 1.2 * 100)
+            crop_overlap_y = int(max_height/crop_shape_y * 1.2 * 100)
+
+        # Ensure the overlap does not exceed 70%
+        if crop_overlap_x > 70:
+            crop_overlap_x = 70
+        if crop_overlap_y > 70:
+            crop_overlap_y = 70    
+        
+        # Ensure the number of crops does not exceed 7 in each direction
+        if height // crop_shape_y > 7:
+            crop_shape_y = height // 7
+        if width // crop_shape_x > 7:
+            crop_shape_x = width // 7
+        
+    return crop_shape_x, crop_shape_y, crop_overlap_x, crop_overlap_y
