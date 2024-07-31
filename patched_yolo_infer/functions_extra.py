@@ -503,7 +503,7 @@ def basic_crop_size_calculation(width, height):
     return crop_shape_x, crop_shape_y, crop_overlap_x, crop_overlap_y
 
 
-def auto_calculation_crop_values(image, type="network_analysis", model=None, classes_list=None):
+def auto_calculate_crop_values(image, type="network_analysis", model=None, classes_list=None):
     """
     Automatically calculate the optimal crop size and overlap for an image.
 
@@ -512,7 +512,7 @@ def auto_calculation_crop_values(image, type="network_analysis", model=None, cla
     the crop size and overlap accordingly.
 
     Parameters:
-    image (numpy.ndarray): The input image.
+    image (numpy.ndarray): The input BGR image.
     type (str): The type of analysis to perform. Can be "image_size_analysis" or "network_analysis". 
         Default is "network_analysis".
     model (YOLO): The YOLO model to use for object detection. If None, a default model yolov8m
@@ -525,7 +525,7 @@ def auto_calculation_crop_values(image, type="network_analysis", model=None, cla
         (crop_shape_y), overlap in the x direction (crop_overlap_x), and overlap in the y direction (crop_overlap_y).
     """
     height, width = image.shape[:2]
-    
+
     # If the type is 'image_size_analysis', calculate crop size based on image dimensions
     if type == 'image_size_analysis':
         crop_shape_x, crop_shape_y, crop_overlap_x, crop_overlap_y = basic_crop_size_calculation(width, height)  
@@ -533,18 +533,20 @@ def auto_calculation_crop_values(image, type="network_analysis", model=None, cla
         # If no model is provided, load a default YOLO model
         if model is None:
             model = YOLO("yolov8m.pt")
-        
+
         # Perform object detection on the image
         result = model.predict(image, conf=0.25, iou=0.75, classes=classes_list, verbose=False)
 
         # If no objects are detected, calculate crop size based on image dimensions
         if len(result[0].boxes) == 0:
-            crop_shape_x, crop_shape_y, crop_overlap_x, crop_overlap_y = basic_crop_size_calculation(width, height) 
+            crop_shape_x, crop_shape_y, crop_overlap_x, crop_overlap_y = (
+                basic_crop_size_calculation(width, height)
+            )
             return crop_shape_x, crop_shape_y, crop_overlap_x, crop_overlap_y
-        
+
         max_width = 0
         max_height = 0
-        
+
         # Iterate through detected boxes to find the maximum width and height
         for box in result[0].boxes:
             _, _, box_width, box_height = box.xywh[0].tolist()  
@@ -555,34 +557,31 @@ def auto_calculation_crop_values(image, type="network_analysis", model=None, cla
 
         # Determine the maximum dimension (width or height) of the detected objects
         max_value = max(box_height, max_width)
-        
-        # Adjust crop size and overlap based on the aspect ratio of the image and the maximum detected object dimension
+
+        # Adjust crop size and overlap based on the maximum detected object dimension
         if width > height:
             crop_shape_x = int(max_value * 3)  
             crop_shape_y = int(max_value * 2)
-            crop_overlap_x = int(max_width/crop_shape_x * 1.2 * 100)
-            crop_overlap_y = int(max_height/crop_shape_y * 1.2 * 100)
         elif width < height:
             crop_shape_x = int(max_value * 2)  
             crop_shape_y = int(max_value * 3)
-            crop_overlap_x = int(max_width/crop_shape_x * 1.2 * 100)
-            crop_overlap_y = int(max_height/crop_shape_y * 1.2 * 100)
         else:
             crop_shape_x = int(max_value * 2.5)  
             crop_shape_y = int(max_value * 2.5)
-            crop_overlap_x = int(max_width/crop_shape_x * 1.2 * 100)
-            crop_overlap_y = int(max_height/crop_shape_y * 1.2 * 100)
+
+        crop_overlap_x = int(max_width/crop_shape_x * 1.2 * 100)
+        crop_overlap_y = int(max_height/crop_shape_y * 1.2 * 100)
 
         # Ensure the overlap does not exceed 70%
         if crop_overlap_x > 70:
             crop_overlap_x = 70
         if crop_overlap_y > 70:
             crop_overlap_y = 70    
-        
+
         # Ensure the number of crops does not exceed 7 in each direction
         if height // crop_shape_y > 7:
             crop_shape_y = height // 7
         if width // crop_shape_x > 7:
             crop_shape_x = width // 7
-        
+
     return crop_shape_x, crop_shape_y, crop_overlap_x, crop_overlap_y
