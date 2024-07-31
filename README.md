@@ -111,7 +111,7 @@ Class implementing cropping and passing crops through a neural network for detec
 
 | **Argument**          | **Type**               | **Default**  | **Description**                                                                                                |
 |-----------------------|------------------------|--------------|----------------------------------------------------------------------------------------------------------------|
-| image                 | np.ndarray             |              | Input image BGR.                                                                                               |
+| image                 | np.ndarray             |              | 	The input image in BGR format.                                                                                               |
 | model_path            | str                    | "yolov8m.pt" | Path to the YOLO model.                                                                                        |
 | model                 | ultralytics model      | None         | Pre-initialized model object. If provided, the model will be used directly instead of loading from model_path. |
 | imgsz                 | int                    | 640          | Size of the input image for inference YOLO.                                                                    |
@@ -252,13 +252,23 @@ An example of working with this mode is presented in Google Colab notebook - [![
 
 ## __How to automatically determine optimal parameters for patches (crops):__
 
-To efficiently process a large number of images of varying sizes and contents, manually selecting the optimal patch sizes and overlaps can be cumbersome. To address this, an algorithm has been developed to automatically calculate the best parameters for patches (crops).
+To efficiently process a large number of images of varying sizes and contents, manually selecting the optimal patch sizes and overlaps can be difficult.. To address this, an algorithm has been developed to automatically calculate the best parameters for patches (crops).
 
 The  `auto_calculate_crop_values` function operates in two modes:
 
 1. **Resolution-Based Analysis**: This mode evaluates the resolution of the source images to determine the optimal patch sizes and overlaps. It is faster but may not yield the highest quality results because it does not take into account the actual objects present in the images.
 
 2. **Neural Network-Based Analysis**: This advanced mode employs a neural network to analyze the images. The algorithm performs a standard inference of the network on the entire image and identifies the largest detected objects. Based on the sizes of these objects, the algorithm selects patch parameters to ensure that the largest objects are fully contained within a patch, and overlapping patches ensure comprehensive coverage. In this mode, it is necessary to input the model that will be used for patch-based inference in the subsequent steps.
+
+Possible arguments of the ```auto_calculate_crop_values``` function:
+| **Argument**          | **Type**               | **Default**  | **Description**                                                                                                |
+|-----------------------|------------------------|--------------|----------------------------------------------------------------------------------------------------------------|
+| image                 | np.ndarray             |              | 	The input image in BGR format.                                                                                                            |
+| mode                 | str      | "network_based"   | The type of analysis to perform. Can be "resolution_based" for Resolution-Based Analysis or "network_based" for Neural Network-Based Analysis.|
+| model                 | ultralytics model      | YOLO("yolov8m.pt")   | Pre-initialized model object for "network_based" mode. If not provided, the default YOLOv8m model will be used.|
+| classes_list                 | list                    | None          | A list of class indices to consider for object detection in "network_based" mode. If None, all classes will be considered. |
+      
+
 
 Example of using:
 ```python
@@ -272,7 +282,7 @@ img = cv2.imread(img_path)
 
 # Calculate the optimal crop size and overlap for an image
 shape_x, shape_y, overlap_x, overlap_y = auto_calculate_crop_values(
-    image=img, mode="network_analysis", model=YOLO("yolov8m.pt")
+    image=img, mode="network_based", model=YOLO("yolov8m.pt")
 )
 ```
 
