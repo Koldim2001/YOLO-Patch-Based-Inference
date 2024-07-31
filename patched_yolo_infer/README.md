@@ -201,7 +201,7 @@ classes_names=result.filtered_classes_names
 
 ## __How to automatically determine optimal parameters for patches (crops):__
 
-To efficiently process a large number of images of varying sizes and contents, manually selecting the optimal patch sizes and overlaps can be cumbersome. To address this, an algorithm has been developed to automatically calculate the best parameters for patches (crops).
+To efficiently process a large number of images of varying sizes and contents, manually selecting the optimal patch sizes and overlaps can be difficult. To address this, an algorithm has been developed to automatically calculate the best parameters for patches (crops).
 
 The  `auto_calculate_crop_values` function operates in two modes:
 
@@ -221,6 +221,6 @@ img = cv2.imread(img_path)
 
 # Calculate the optimal crop size and overlap for an image
 shape_x, shape_y, overlap_x, overlap_y = auto_calculate_crop_values(
-    image=img, mode="network_analysis", model=YOLO("yolov8m.pt")
+    image=img, mode="network_based", model=YOLO("yolov8m.pt")
 )
 ```
