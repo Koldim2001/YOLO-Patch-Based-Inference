@@ -78,7 +78,7 @@ import cv2
 from patched_yolo_infer import MakeCropsDetectThem, CombineDetections
 
 # Load the image 
-img_path = 'test_image.jpg'
+img_path = "test_image.jpg"
 img = cv2.imread(img_path)
 
 element_crops = MakeCropsDetectThem(
@@ -213,6 +213,7 @@ visualize_results(
 6. **Handling Multi-Class Detection Issues**: If you are working on a multi-class detection or instance segmentation task, it may be beneficial to switch the mode to `class_agnostic_nms=False` in the `CombineDetections` parameters. The default mode, with `class_agnostic_nms` set to True, is particularly effective when handling a large number of closely related classes in pre-trained YOLO networks (for example, when there is often confusion between classes like `car` and `truck`). If in your scenario, an object of one class can physically be inside an object of another class, you should definitely set `class_agnostic_nms=False` for such cases.
 
 7. **High-Quality Instance Segmentation**: For tasks requiring high-quality results in instance segmentation, detailed guidance is provided in the next section of the README.
+
 ---
 
 ## __How to improve the quality of the algorithm for the task of instance segmentation:__
@@ -247,6 +248,38 @@ classes_names=result.filtered_classes_names
 
 An example of working with this mode is presented in Google Colab notebook - [![Open In Colab][colab_badge]][colab_ex1_memory_optimize]
 
+---
+
+## __How to automatically determine optimal parameters for patches (crops):__
+
+To efficiently process a large number of images of varying sizes and contents, manually selecting the optimal patch sizes and overlaps can be cumbersome. To address this, an algorithm has been developed to automatically calculate the best parameters for patches (crops).
+
+The  `auto_calculate_crop_values` function operates in two modes:
+
+1. **Resolution-Based Analysis**: This mode evaluates the resolution of the source images to determine the optimal patch sizes and overlaps. It is faster but may not yield the highest quality results because it does not take into account the actual objects present in the images.
+
+2. **Neural Network-Based Analysis**: This advanced mode employs a neural network to analyze the images. The algorithm performs a standard inference of the network on the entire image and identifies the largest detected objects. Based on the sizes of these objects, the algorithm selects patch parameters to ensure that the largest objects are fully contained within a patch, and overlapping patches ensure comprehensive coverage. In this mode, it is necessary to input the model that will be used for patch-based inference in the subsequent steps.
+
+Example of using:
+```python
+import cv2
+from ultralytics import YOLO
+from patched_yolo_infer import auto_calculate_crop_values
+
+# Load the image
+img_path = "test_image.jpg"
+img = cv2.imread(img_path)
+
+# Calculate the optimal crop size and overlap for an image
+shape_x, shape_y, overlap_x, overlap_y = auto_calculate_crop_values(
+    image=img, mode="network_analysis", model=YOLO("yolov8m.pt")
+)
+```
+
+An example of working with `auto_calculate_crop_values` is presented in Google Colab notebook - [![Open In Colab][colab_badge]][colab_ex1_auto_calculate_crop_values]
+
+
+
 [nb_example1]: https://nbviewer.org/github/Koldim2001/YOLO-Patch-Based-Inference/blob/main/examples/example_patch_based_inference.ipynb
 [colab_badge]: https://colab.research.google.com/assets/colab-badge.svg
 [colab_ex1]: https://colab.research.google.com/drive/1XCpIYLMFEmGSO0XCOkSD7CcD9SFHSJPA?usp=sharing
@@ -255,3 +288,4 @@ An example of working with this mode is presented in Google Colab notebook - [![
 [colab_ex2]: https://colab.research.google.com/drive/1eM4o1e0AUQrS1mLDpcgK9HKInWEvnaMn?usp=sharing
 [yt_link2]: https://www.youtube.com/watch?v=nBQuWa63188
 [colab_ex1_memory_optimize]: https://colab.research.google.com/drive/1XCpIYLMFEmGSO0XCOkSD7CcD9SFHSJPA?usp=sharing#scrollTo=DM_eCc3yXzXW
+[colab_ex1_auto_calculate_crop_values]: https://FIX

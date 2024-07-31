@@ -503,7 +503,7 @@ def basic_crop_size_calculation(width, height):
     return crop_shape_x, crop_shape_y, crop_overlap_x, crop_overlap_y
 
 
-def auto_calculate_crop_values(image, type="network_analysis", model=None, classes_list=None):
+def auto_calculate_crop_values(image, mode="network_analysis", model=None, classes_list=None):
     """
     Automatically calculate the optimal crop size and overlap for an image.
 
@@ -513,7 +513,7 @@ def auto_calculate_crop_values(image, type="network_analysis", model=None, class
 
     Parameters:
     image (numpy.ndarray): The input BGR image.
-    type (str): The type of analysis to perform. Can be "image_size_analysis" or "network_analysis". 
+    mode (str): The type of analysis to perform. Can be "image_size_analysis" or "network_analysis". 
         Default is "network_analysis".
     model (YOLO): The YOLO model to use for object detection. If None, a default model yolov8m
         will be loaded. Default is None.
@@ -526,8 +526,8 @@ def auto_calculate_crop_values(image, type="network_analysis", model=None, class
     """
     height, width = image.shape[:2]
 
-    # If the type is 'image_size_analysis', calculate crop size based on image dimensions
-    if type == 'image_size_analysis':
+    # If the mode is 'image_size_analysis', calculate crop size based on image dimensions
+    if mode == 'image_size_analysis':
         crop_shape_x, crop_shape_y, crop_overlap_x, crop_overlap_y = basic_crop_size_calculation(width, height)  
     else:
         # If no model is provided, load a default YOLO model

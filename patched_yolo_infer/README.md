@@ -25,9 +25,9 @@ Interactive notebooks are provided to showcase the functionality of the library.
 
 __Check this Colab examples:__
                          
-Patch-Based-Inference Example - [Open in Colab](https://colab.research.google.com/drive/1XCpIYLMFEmGSO0XCOkSD7CcD9SFHSJPA?usp=sharing)
+Patch-Based-Inference Example - [**Open in Colab**](https://colab.research.google.com/drive/1XCpIYLMFEmGSO0XCOkSD7CcD9SFHSJPA?usp=sharing)
 
-Example of using various functions for visualizing basic YOLOv8/v9 inference results - [Open in Colab](https://colab.research.google.com/drive/1eM4o1e0AUQrS1mLDpcgK9HKInWEvnaMn?usp=sharing)
+Example of using various functions for visualizing basic YOLOv8/v9 inference results - [**Open in Colab**](https://colab.research.google.com/drive/1eM4o1e0AUQrS1mLDpcgK9HKInWEvnaMn?usp=sharing)
 
 
 ## Usage
@@ -54,7 +54,7 @@ import cv2
 from patched_yolo_infer import MakeCropsDetectThem, CombineDetections
 
 # Load the image 
-img_path = 'test_image.jpg'
+img_path = "test_image.jpg"
 img = cv2.imread(img_path)
 
 element_crops = MakeCropsDetectThem(
@@ -167,7 +167,7 @@ visualize_results(
 
 ---
 
-## __HOW TO IMPROVE THE QUALITY OF THE ALGORITHM FOR THE TASK OF INSTANCE SEGMENTATION:__
+## __How to improve the quality of the algorithm for the task of instance segmentation:__
 
 In this approach, all operations under the hood are performed on binary masks of recognized objects. Storing these masks consumes a lot of memory, so this method requires more RAM and slightly more processing time. However, the accuracy of recognition significantly improves, which is especially noticeable in cases where there are many objects of different sizes and they are densely packed. Therefore, we recommend using this approach in production if accuracy is important and not speed, and if your computational resources allow storing hundreds of binary masks in RAM.
 
@@ -195,4 +195,32 @@ boxes=result.filtered_boxes
 masks=result.filtered_masks
 classes_ids=result.filtered_classes_id
 classes_names=result.filtered_classes_names
+```
+
+---
+
+## __How to automatically determine optimal parameters for patches (crops):__
+
+To efficiently process a large number of images of varying sizes and contents, manually selecting the optimal patch sizes and overlaps can be cumbersome. To address this, an algorithm has been developed to automatically calculate the best parameters for patches (crops).
+
+The  `auto_calculate_crop_values` function operates in two modes:
+
+1. **Resolution-Based Analysis**: This mode evaluates the resolution of the source images to determine the optimal patch sizes and overlaps. It is faster but may not yield the highest quality results because it does not take into account the actual objects present in the images.
+
+2. **Neural Network-Based Analysis**: This advanced mode employs a neural network to analyze the images. The algorithm performs a standard inference of the network on the entire image and identifies the largest detected objects. Based on the sizes of these objects, the algorithm selects patch parameters to ensure that the largest objects are fully contained within a patch, and overlapping patches ensure comprehensive coverage. In this mode, it is necessary to input the model that will be used for patch-based inference in the subsequent steps.
+
+Example of using:
+```python
+import cv2
+from ultralytics import YOLO
+from patched_yolo_infer import auto_calculate_crop_values
+
+# Load the image
+img_path = "test_image.jpg"
+img = cv2.imread(img_path)
+
+# Calculate the optimal crop size and overlap for an image
+shape_x, shape_y, overlap_x, overlap_y = auto_calculate_crop_values(
+    image=img, mode="network_analysis", model=YOLO("yolov8m.pt")
+)
 ```
