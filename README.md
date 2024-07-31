@@ -266,9 +266,8 @@ Possible arguments of the ```auto_calculate_crop_values``` function:
 | image                 | np.ndarray             |              | 	The input image in BGR format.                                                                                                            |
 | mode                 | str      | "network_based"   | The type of analysis to perform. Can be "resolution_based" for Resolution-Based Analysis or "network_based" for Neural Network-Based Analysis.|
 | model                 | ultralytics model      | YOLO("yolov8m.pt")   | Pre-initialized model object for "network_based" mode. If not provided, the default YOLOv8m model will be used.|
-| classes_list                 | list                    | None          | A list of class indices to consider for object detection in "network_based" mode. If None, all classes will be considered. |
-      
-
+| classes_list          | list                   | None          | A list of class indices to consider for object detection in "network_based" mode. If None, all classes will be considered. |
+| conf                  | float                  | 0.25          | The confidence threshold for detection in "network_based" mode. |
 
 Example of using:
 ```python

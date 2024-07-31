@@ -503,7 +503,7 @@ def basic_crop_size_calculation(width, height):
     return crop_shape_x, crop_shape_y, crop_overlap_x, crop_overlap_y
 
 
-def auto_calculate_crop_values(image, mode="network_based", model=None, classes_list=None):
+def auto_calculate_crop_values(image, mode="network_based", model=None, classes_list=None, conf=0.25):
     """
     Automatically calculate the optimal crop size and overlap for an image.
 
@@ -519,6 +519,7 @@ def auto_calculate_crop_values(image, mode="network_based", model=None, classes_
         will be loaded. Default is None.
     classes_list (list): A list of class indices to consider for object detection. If None, all classes 
         will be considered. Default is None.
+    conf (float): The confidence threshold for detection in "network_based" mode. Default is 0.25.
 
     Returns:
     tuple: A tuple containing the crop size in the x direction (crop_shape_x), crop size in the y direction 
@@ -537,7 +538,7 @@ def auto_calculate_crop_values(image, mode="network_based", model=None, classes_
             model = YOLO("yolov8m.pt")
 
         # Perform object detection on the image
-        result = model.predict(image, conf=0.25, iou=0.75, classes=classes_list, verbose=False)
+        result = model.predict(image, conf=conf, iou=0.75, classes=classes_list, verbose=False)
 
         # If no objects are detected, calculate crop size based on image dimensions
         if len(result[0].boxes) == 0:
