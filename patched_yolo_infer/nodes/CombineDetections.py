@@ -79,7 +79,7 @@ class CombineDetections:
         ]  # make str list
 
         # Invoke the NMS:
-        if self.class_agnostic_nms:
+        if not self.class_agnostic_nms:
             self.filtered_indices = self.agnostic_nms(
                 torch.tensor(self.detected_cls_id_list_full),
                 torch.tensor(self.detected_conf_list_full),
