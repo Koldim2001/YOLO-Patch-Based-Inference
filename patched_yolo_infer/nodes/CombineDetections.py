@@ -40,7 +40,8 @@ class CombineDetections:
         filtered_classes_id (list): List of class IDs after non-maximum suppression.
         filtered_classes_names (list): List of class names after non-maximum suppression.
         filtered_masks (list): List of filtered (after nms) masks if segmentation is enabled.
-        filtered_polygons (list): List of filtered (after nms) polygons if segmentation and memory optimization are enabled.
+        filtered_polygons (list): List of filtered (after nms) polygons if segmentation and
+            memory optimization are enabled.
     """
 
     def __init__(
@@ -64,7 +65,7 @@ class CombineDetections:
         self.intelligent_sorter = intelligent_sorter # enable sorting by area and confidence parameter
         self.sorter_bins = sorter_bins
         self.class_agnostic_nms = class_agnostic_nms
-        
+
         # Combinate detections of all patches
         (
             self.detected_conf_list_full,
@@ -99,7 +100,7 @@ class CombineDetections:
                 self.detected_masks_list_full,
                 intelligent_sorter=self.intelligent_sorter
             )  
-            
+
         # Apply filtering (nms output indeces) to the prediction lists
         self.filtered_confidences = [self.detected_conf_list_full[i] for i in self.filtered_indices]
         self.filtered_boxes = [self.detected_xyxy_list_full[i] for i in self.filtered_indices]
@@ -111,7 +112,7 @@ class CombineDetections:
             self.filtered_masks = [self.detected_masks_list_full[i] for i in self.filtered_indices]
         else:
             self.filtered_masks = []
-        
+
         # Polygons filtering:
         if element_crops.segment and element_crops.memory_optimize:
             self.filtered_polygons = [self.detected_polygons_list_full[i] for i in self.filtered_indices]
@@ -160,13 +161,13 @@ class CombineDetections:
         # Create the bounds
         step = 1 / N
         bounds = np.arange(0, 1 + step, step)
-        
+
         # Use np.digitize to determine the corresponding bin for each value
         indices = np.digitize(confidences, bounds, right=True) - 1
-        
+
         # Bind values to the left boundary of the corresponding bin
         averaged_confidences = np.round(bounds[indices], 2) 
-        
+
         return averaged_confidences.tolist()
 
     @staticmethod
@@ -201,7 +202,8 @@ class CombineDetections:
             masks_list (list of np.ndarray): List of binary masks for comparison.
 
         Returns:
-            torch.Tensor: IoU scores for each mask in masks_list compared to the input mask, calculated over the smaller area.
+            torch.Tensor: IoU scores for each mask in masks_list compared to the input mask,
+                calculated over the smaller area.
         """
         ios_scores = []
         for other_mask in masks_list:
@@ -234,7 +236,9 @@ class CombineDetections:
             nms_threshold (float): The threshold for match metric.
             masks (list): List of masks. 
             intelligent_sorter (bool, optional): intelligent sorter 
-            cls_indexes (torch.Tensor):  indexes from network detections corresponding to the defined class, uses in case of not agnostic nms
+            cls_indexes (torch.Tensor):  indexes from network detections corresponding
+                to the defined class,  uses in case of not agnostic nms
+
         Returns:
             list: List of filtered indexes.
         """
@@ -256,7 +260,10 @@ class CombineDetections:
             order = torch.tensor(
                 sorted(
                     range(len(confidences)),
-                    key=lambda k: (self.average_to_bound(confidences[k].item(), self.sorter_bins), areas[k]),
+                    key=lambda k: (
+                        self.average_to_bound(confidences[k].item(), self.sorter_bins),
+                        areas[k],
+                    ),
                     reverse=False,
                 )
             )
@@ -351,7 +358,7 @@ class CombineDetections:
         if cls_indexes is not None:
             keep = [cls_indexes[i] for i in keep]
         return keep
-    
+
     def not_agnostic_nms(
             self,
             detected_cls_id_list_full,
@@ -362,8 +369,9 @@ class CombineDetections:
             detected_masks_list_full, 
             intelligent_sorter
                      ):
-            '''
-            Performs Non-Maximum Suppression (NMS) in a non-agnostic manner, where NMS is applied separately to each class.
+        '''
+            Performs Non-Maximum Suppression (NMS) in a non-agnostic manner, where NMS 
+            is applied separately to each class.
 
             Args:
                 detected_cls_id_list_full (torch.Tensor): tensor containing the class IDs for each detected object.
@@ -373,17 +381,21 @@ class CombineDetections:
                 nms_threshold (float): the threshold for match metric.
                 detected_masks_list_full (torch.Tensor):  List of masks. 
                 intelligent_sorter (bool, optional): intelligent sorter 
+
             Returns:
-                List[int]: A list of indices representing the detections that are kept after applying NMS for each class separately.
+                List[int]: A list of indices representing the detections that are kept after applying
+                    NMS for each class separately.
 
             Notes:
-                - This method performs NMS separately for each class, which helps in reducing false positives within each class.
-                - The `nms` function is assumed to be defined elsewhere in the class and is responsible for performing the actual NMS operation.
+                - This method performs NMS separately for each class, which helps in
+                    reducing false positives within each class.
+                - If in your scenario, an object of one class can physically be inside
+                    an object of another class, you should definitely use this non-agnostic nms
             '''
-            all_keeps = []
-            for cls in torch.unique(detected_cls_id_list_full):
-                cls_indexes = torch.where(detected_cls_id_list_full==cls)[0]
-                keep_indexes = self.nms(
+        all_keeps = []
+        for cls in torch.unique(detected_cls_id_list_full):
+            cls_indexes = torch.where(detected_cls_id_list_full==cls)[0]
+            keep_indexes = self.nms(
                     detected_conf_list_full[cls_indexes],
                     detected_xyxy_list_full[cls_indexes],
                     match_metric,
@@ -392,9 +404,5 @@ class CombineDetections:
                     intelligent_sorter,
                     cls_indexes
                 )
-                all_keeps.extend(keep_indexes)
-            return all_keeps
-
-
-
-        
+            all_keeps.extend(keep_indexes)
+        return all_keeps

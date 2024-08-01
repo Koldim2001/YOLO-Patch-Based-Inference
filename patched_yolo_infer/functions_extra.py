@@ -58,9 +58,9 @@ def visualize_results_usual_yolo_inference(
         axis_off (bool): If True, axis is turned off in the final visualization.
         show_classes_list (list): If empty, visualize all classes. Otherwise, visualize only classes in the list.
         inference_extra_args (dict/None): Dictionary with extra ultralytics inference parameters.
-        list_of_class_colors (list/None): A list of tuples representing the colors for each class in BGR format. If provided,  
-                    these colors will be used for displaying the classes instead of random colors. The number of tuples 
-                    in the list must match the number of possible classes in the network.
+        list_of_class_colors (list/None): A list of tuples representing the colors for each class in BGR format.  
+                    If provided, these colors will be used for displaying the classes instead of random colors. 
+                    The number of tuples in the list must match the number of possible classes in the network.
         return_image_array (bool): If True, the function returns the image bgr array instead of displaying it. 
                                    Default is False.
 
@@ -314,10 +314,11 @@ def visualize_results(
         show_confidences (bool): If true and show_class=True, confidences near class are visualized. Default is False.
         axis_off (bool): If true, axis is turned off in the final visualization. Default is True.
         show_classes_list (list): If empty, visualize all classes. Otherwise, visualize only classes in the list.
-        list_of_class_colors (list/None): A list of tuples representing the colors for each class in BGR format. If provided,  
-                    these colors will be used for displaying the classes instead of random colors. The number of tuples 
-                    in the list must match the number of possible classes in the network.
-        return_image_array (bool): If True, the function returns the image bgr array instead of displaying it. Default is False.
+        list_of_class_colors (list/None): A list of tuples representing the colors for each class in BGR format. 
+                    If provided, these colors will be used for displaying the classes instead of random colors. 
+                    The number of tuples in the list must match the number of possible classes in the network.
+        return_image_array (bool): If True, the function returns the image bgr array instead of displaying it.
+                    Default is False.
                                    
     Returns:
         None/np.array
@@ -476,8 +477,8 @@ def basic_crop_size_calculation(width, height):
     height (int): The height of the image in pixels.
 
     Returns:
-    tuple: A tuple containing the crop size in the x direction (crop_shape_x), crop size in the y direction (crop_shape_y),
-           overlap in the x direction (crop_overlap_x), and overlap in the y direction (crop_overlap_y).
+    tuple: A tuple containing the crop size in the x direction (crop_shape_x), crop size in the y direction
+        (crop_shape_y), overlap in the x direction (crop_overlap_x), and overlap in the y direction (crop_overlap_y).
     """
     total_pixels = width * height
 
