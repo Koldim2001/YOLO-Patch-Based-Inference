@@ -221,7 +221,7 @@ class CombineDetections:
         boxes: torch.tensor,
         match_metric,
         nms_threshold,
-        masks=None,
+        masks=[],
         intelligent_sorter=False, 
         cls_indexes=None 
     ):
@@ -395,12 +395,16 @@ class CombineDetections:
         all_keeps = []
         for cls in torch.unique(detected_cls_id_list_full):
             cls_indexes = torch.where(detected_cls_id_list_full==cls)[0]
+            if len(detected_masks_list_full) > 0:
+                masks_of_class = [detected_masks_list_full[i] for i in cls_indexes]
+            else:
+                masks_of_class = []
             keep_indexes = self.nms(
                     detected_conf_list_full[cls_indexes],
                     detected_xyxy_list_full[cls_indexes],
                     match_metric,
                     nms_threshold,
-                    detected_masks_list_full,
+                    masks_of_class,
                     intelligent_sorter,
                     cls_indexes
                 )
