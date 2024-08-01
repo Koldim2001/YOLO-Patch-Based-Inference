@@ -79,17 +79,7 @@ class CombineDetections:
         ]  # make str list
 
         # Invoke the NMS:
-        if not self.class_agnostic_nms:
-            self.filtered_indices = self.agnostic_nms(
-                torch.tensor(self.detected_cls_id_list_full),
-                torch.tensor(self.detected_conf_list_full),
-                torch.tensor(self.detected_xyxy_list_full),
-                self.match_metric,
-                self.nms_threshold,
-                self.detected_masks_list_full,
-                intelligent_sorter=self.intelligent_sorter
-            )  
-        else:
+        if self.class_agnostic_nms:
             self.filtered_indices = self.nms(
                 torch.tensor(self.detected_conf_list_full),
                 torch.tensor(self.detected_xyxy_list_full),
@@ -98,6 +88,17 @@ class CombineDetections:
                 self.detected_masks_list_full,
                 intelligent_sorter=self.intelligent_sorter
             ) 
+
+        else:
+            self.filtered_indices = self.not_agnostic_nms(
+                torch.tensor(self.detected_cls_id_list_full),
+                torch.tensor(self.detected_conf_list_full),
+                torch.tensor(self.detected_xyxy_list_full),
+                self.match_metric,
+                self.nms_threshold,
+                self.detected_masks_list_full,
+                intelligent_sorter=self.intelligent_sorter
+            )  
             
         # Apply filtering (nms output indeces) to the prediction lists
         self.filtered_confidences = [self.detected_conf_list_full[i] for i in self.filtered_indices]
@@ -227,13 +228,13 @@ class CombineDetections:
         overlapping bounding boxes for a given object.
 
         Args:
-            confidences (list): List of confidence scores.
-            boxes (list): List of bounding boxes.
+            confidences (torch.Tensor): List of confidence scores.
+            boxes (torch.Tensor): List of bounding boxes.
             match_metric (str): Matching metric, either 'IOU' or 'IOS'.
             nms_threshold (float): The threshold for match metric.
             masks (list): List of masks. 
             intelligent_sorter (bool, optional): intelligent sorter 
-
+            cls_indexes (torch.Tensor):  indexes from network detections corresponding to the defined class, uses in case of not agnostic nms
         Returns:
             list: List of filtered indexes.
         """
@@ -351,7 +352,7 @@ class CombineDetections:
             keep = [cls_indexes[i] for i in keep]
         return keep
     
-    def agnostic_nms(
+    def not_agnostic_nms(
             self,
             detected_cls_id_list_full,
             detected_conf_list_full, 
@@ -361,6 +362,24 @@ class CombineDetections:
             detected_masks_list_full, 
             intelligent_sorter
                      ):
+            '''
+            Performs Non-Maximum Suppression (NMS) in a non-agnostic manner, where NMS is applied separately to each class.
+
+            Args:
+                detected_cls_id_list_full (torch.Tensor): tensor containing the class IDs for each detected object.
+                detected_conf_list_full (torch.Tensor):  tensor of confidence scores.
+                detected_xyxy_list_full (torch.Tensor): tensor of bounding boxes.
+                match_metric (str): Matching metric, either 'IOU' or 'IOS'.
+                nms_threshold (float): the threshold for match metric.
+                detected_masks_list_full (torch.Tensor):  List of masks. 
+                intelligent_sorter (bool, optional): intelligent sorter 
+            Returns:
+                List[int]: A list of indices representing the detections that are kept after applying NMS for each class separately.
+
+            Notes:
+                - This method performs NMS separately for each class, which helps in reducing false positives within each class.
+                - The `nms` function is assumed to be defined elsewhere in the class and is responsible for performing the actual NMS operation.
+            '''
             all_keeps = []
             for cls in torch.unique(detected_cls_id_list_full):
                 cls_indexes = torch.where(detected_cls_id_list_full==cls)[0]
