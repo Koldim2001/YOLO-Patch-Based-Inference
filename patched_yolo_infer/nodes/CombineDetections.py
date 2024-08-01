@@ -64,7 +64,7 @@ class CombineDetections:
         self.intelligent_sorter = intelligent_sorter # enable sorting by area and confidence parameter
         self.sorter_bins = sorter_bins
         self.class_agnostic_nms = class_agnostic_nms
-
+        
         # Combinate detections of all patches
         (
             self.detected_conf_list_full,
@@ -81,8 +81,9 @@ class CombineDetections:
         # Invoke the NMS:
         if self.class_agnostic_nms:
             self.filtered_indices = self.agnostic_nms(
-                self.detected_conf_list_full,
-                self.detected_xyxy_list_full,
+                torch.tensor(self.detected_cls_id_list_full),
+                torch.tensor(self.detected_conf_list_full),
+                torch.tensor(self.detected_xyxy_list_full),
                 self.match_metric,
                 self.nms_threshold,
                 self.detected_masks_list_full,
@@ -90,9 +91,8 @@ class CombineDetections:
             )  
         else:
             self.filtered_indices = self.nms(
-                self.detected_conf_list_full,
-                self.detected_xyxy_list_full,
-                self.detected_cls_id_list_full,
+                torch.tensor(self.detected_conf_list_full),
+                torch.tensor(self.detected_xyxy_list_full),
                 self.match_metric,
                 self.nms_threshold,
                 self.detected_masks_list_full,
@@ -212,14 +212,15 @@ class CombineDetections:
             ios_scores.append(ios)
         return torch.tensor(ios_scores)
 
-    def agnostic_nms(
+    def nms(
         self,
-        confidences: list,
-        boxes: list,
+        confidences: torch.tensor,
+        boxes: torch.tensor,
         match_metric,
         nms_threshold,
         masks=None,
-        intelligent_sorter=False,
+        intelligent_sorter=False, 
+        cls_indexes=None 
     ):
         """
         Apply class-agnostic non-maximum suppression to avoid detecting too many
@@ -238,10 +239,6 @@ class CombineDetections:
         """
         if len(boxes) == 0:
             return []
-
-        # Convert lists to tensors
-        boxes = torch.tensor(boxes)
-        confidences = torch.tensor(confidences)
 
         # Extract coordinates for every prediction box present
         x1 = boxes[:, 0]
@@ -350,5 +347,35 @@ class CombineDetections:
                 mask = match_metric_value < nms_threshold
 
                 order = order[mask]
-
+        if cls_indexes is not None:
+            keep = [cls_indexes[i] for i in keep]
         return keep
+    
+    def agnostic_nms(
+            self,
+            detected_cls_id_list_full,
+            detected_conf_list_full, 
+            detected_xyxy_list_full, 
+            match_metric, 
+            nms_threshold, 
+            detected_masks_list_full, 
+            intelligent_sorter
+                     ):
+            all_keeps = []
+            for cls in torch.unique(detected_cls_id_list_full):
+                cls_indexes = torch.where(detected_cls_id_list_full==cls)[0]
+                keep_indexes = self.nms(
+                    detected_conf_list_full[cls_indexes],
+                    detected_xyxy_list_full[cls_indexes],
+                    match_metric,
+                    nms_threshold,
+                    detected_masks_list_full,
+                    intelligent_sorter,
+                    cls_indexes
+                )
+                all_keeps.extend(keep_indexes)
+            return all_keeps
+
+
+
+        
