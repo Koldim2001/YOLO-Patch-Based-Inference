@@ -111,7 +111,7 @@ Class implementing combining masks/boxes from multiple crops + NMS (Non-Maximum 
 - **match_metric** (*str*): Matching metric, either 'IOU' or 'IOS'.
 - **class_agnostic_nms** (*bool*) Determines the NMS mode in object detection. When set to True, NMS operates across all classes, ignoring class distinctions and suppressing less confident bounding boxes globally. Otherwise, NMS is applied separately for each class. (Default is True)
 - **intelligent_sorter** (*bool*): Enable sorting by area and rounded confidence parameter. If False, sorting will be done only by confidence (usual nms). (Dafault is True)
-- **sorter_bins** (*int*): Number of bins to use for intelligent_sorter. A smaller number of bins makes the NMS more reliant on object sizes rather than confidence scores. (Defaults to 10)
+- **sorter_bins** (*int*): Number of bins to use for intelligent_sorter. A smaller number of bins makes the NMS more reliant on object sizes rather than confidence scores. (Defaults to 5)
 
 
 ---

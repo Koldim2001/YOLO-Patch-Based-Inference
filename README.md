@@ -140,7 +140,7 @@ Class implementing combining masks/boxes from multiple crops + NMS (Non-Maximum 
 | match_metric         | str               | IOS         | Matching metric, either 'IOU' or 'IOS'.                                                                                 |
 | class_agnostic_nms   | bool              | True         | Determines the NMS mode in object detection. When set to True, NMS operates across all classes, ignoring class distinctions and suppressing less confident bounding boxes globally. Otherwise, NMS is applied separately for each class. |
 | intelligent_sorter   | bool              | True        | Enable sorting by area and rounded confidence parameter. If False, sorting will be done only by confidence (usual nms). |
-| sorter_bins          | int               | 10          | Number of bins to use for intelligent_sorter. A smaller number of bins makes the NMS more reliant on object sizes rather than confidence scores. |
+| sorter_bins          | int               | 5           | Number of bins to use for intelligent_sorter. A smaller number of bins makes the NMS more reliant on object sizes rather than confidence scores. |
 
 
 
@@ -208,7 +208,7 @@ visualize_results(
 
 4. **Enhancing Detection Within Patches**: To detect more objects within a single crop, increase the `imgsz` parameter and lower the confidence threshold (`conf`). All parameters available for configuring Ultralytics model inference are also accessible during the initialization of the `MakeCropsDetectThem` element.
 
-5. **Handling Duplicate Suppression Issues**: If you encounter issues with duplicate suppression from overlapping patches, consider adjusting the `nms_threshold` and `sorter_bins` parameters in `CombineDetections` or modifying the overlap and size parameters of the patches themselves. (PS: often lowering `sorter_bins` to 5 or 4 can help).
+5. **Handling Duplicate Suppression Issues**: If you encounter issues with duplicate suppression from overlapping patches, consider adjusting the `nms_threshold` and `sorter_bins` parameters in `CombineDetections` or modifying the overlap and size parameters of the patches themselves. (PS: often lowering `sorter_bins` to 4 or 2 can help).
 
 6. **Handling Multi-Class Detection Issues**: If you are working on a multi-class detection or instance segmentation task, it may be beneficial to switch the mode to `class_agnostic_nms=False` in the `CombineDetections` parameters. The default mode, with `class_agnostic_nms` set to True, is particularly effective when handling a large number of closely related classes in pre-trained YOLO networks (for example, when there is often confusion between classes like `car` and `truck`). If in your scenario, an object of one class can physically be inside an object of another class, you should definitely set `class_agnostic_nms=False` for such cases.
 

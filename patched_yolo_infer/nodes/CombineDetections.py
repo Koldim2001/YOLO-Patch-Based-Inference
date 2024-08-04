@@ -50,7 +50,7 @@ class CombineDetections:
         nms_threshold=0.3,
         match_metric='IOS',
         intelligent_sorter=True,
-        sorter_bins=10,
+        sorter_bins=5,
         class_agnostic_nms=True
     ) -> None:
         self.class_names = element_crops.class_names_dict 
