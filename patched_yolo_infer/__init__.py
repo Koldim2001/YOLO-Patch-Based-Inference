@@ -3,6 +3,8 @@ from .functions_extra import (
     get_crops,
     visualize_results,
     create_masks_from_polygons,
+    basic_crop_size_calculation,
+    auto_calculate_crop_values
 )
 
 from .nodes.MakeCropsDetectThem import MakeCropsDetectThem

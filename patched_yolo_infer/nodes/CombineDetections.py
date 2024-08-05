@@ -9,20 +9,23 @@ class CombineDetections:
 
     Args:
         element_crops (MakeCropsDetectThem): Object containing crop information.
-        nms_threshold (float): IoU/IoS threshold for non-maximum suppression.
-        match_metric (str): Matching metric, either 'IOU' or 'IOS'.
+        nms_threshold (float): IoU/IoS threshold for non-maximum suppression.  Dafault is 0.3.
+        match_metric (str): Matching metric, either 'IOU' or 'IOS'. Dafault is IoS.
+        class_agnostic_nms (bool) Determines the NMS mode in object detection. When set to True, NMS 
+            operates across all classes, ignoring class distinctions and suppressing less confident 
+            bounding boxes globally. Otherwise, NMS is applied separately for each class. Default is True.
         intelligent_sorter (bool): Enable sorting by area and rounded confidence parameter. 
-            If False, sorting will be done only by confidence (usual nms). (Dafault True)
+            If False, sorting will be done only by confidence (usual nms). Dafault is True.
         sorter_bins (int): Number of bins to use for intelligent_sorter. A smaller number of bins makes
             the NMS more reliant on object sizes rather than confidence scores. Defaults to 10.
 
     Attributes:
-        conf_treshold (float): Confidence threshold of yolov8.
-        class_names (dict): Dictionary containing class names pf yolov8 model.
+        class_names (dict): Dictionary containing class names of yolo model.
         crops (list): List to store the CropElement objects.
         image (np.ndarray): Source image in BGR.
         nms_threshold (float): IOU/IOS threshold for non-maximum suppression.
         match_metric (str): Matching metric (IOU/IOS).
+        class_agnostic_nms (bool) Determines the NMS mode in object detection.
         intelligent_sorter (bool): Flag indicating whether sorting by area and confidence parameter is enabled.
         sorter_bins (int): Number of bins to use for intelligent_sorter. 
         detected_conf_list_full (list): List of detected confidences.
@@ -37,7 +40,8 @@ class CombineDetections:
         filtered_classes_id (list): List of class IDs after non-maximum suppression.
         filtered_classes_names (list): List of class names after non-maximum suppression.
         filtered_masks (list): List of filtered (after nms) masks if segmentation is enabled.
-        filtered_polygons (list): List of filtered (after nms) polygons if segmentation and memory optimization are enabled.
+        filtered_polygons (list): List of filtered (after nms) polygons if segmentation and
+            memory optimization are enabled.
     """
 
     def __init__(
@@ -46,9 +50,9 @@ class CombineDetections:
         nms_threshold=0.3,
         match_metric='IOS',
         intelligent_sorter=True,
-        sorter_bins=10
+        sorter_bins=5,
+        class_agnostic_nms=True
     ) -> None:
-        self.conf_treshold = element_crops.conf
         self.class_names = element_crops.class_names_dict 
         self.crops = element_crops.crops  # List to store the CropElement objects
         if element_crops.resize_initial_size:
@@ -60,6 +64,7 @@ class CombineDetections:
         self.match_metric = match_metric 
         self.intelligent_sorter = intelligent_sorter # enable sorting by area and confidence parameter
         self.sorter_bins = sorter_bins
+        self.class_agnostic_nms = class_agnostic_nms
 
         # Combinate detections of all patches
         (
@@ -74,26 +79,27 @@ class CombineDetections:
             self.class_names[value] for value in self.detected_cls_id_list_full
         ]  # make str list
 
-        # Invoke the NMS for segmentation masks method for filtering predictions
-        if len(self.detected_masks_list_full) > 0:
-
+        # Invoke the NMS:
+        if self.class_agnostic_nms:
             self.filtered_indices = self.nms(
-                self.detected_conf_list_full,
-                self.detected_xyxy_list_full,
+                torch.tensor(self.detected_conf_list_full),
+                torch.tensor(self.detected_xyxy_list_full),
                 self.match_metric,
                 self.nms_threshold,
                 self.detected_masks_list_full,
                 intelligent_sorter=self.intelligent_sorter
-            )  # for instance segmentation
+            ) 
+
         else:
-            # Invoke the NMS method for filtering prediction
-            self.filtered_indices = self.nms(
-                self.detected_conf_list_full,
-                self.detected_xyxy_list_full,
-                self.match_metric, 
+            self.filtered_indices = self.not_agnostic_nms(
+                torch.tensor(self.detected_cls_id_list_full),
+                torch.tensor(self.detected_conf_list_full),
+                torch.tensor(self.detected_xyxy_list_full),
+                self.match_metric,
                 self.nms_threshold,
+                self.detected_masks_list_full,
                 intelligent_sorter=self.intelligent_sorter
-            )  # for detection
+            )  
 
         # Apply filtering (nms output indeces) to the prediction lists
         self.filtered_confidences = [self.detected_conf_list_full[i] for i in self.filtered_indices]
@@ -106,7 +112,7 @@ class CombineDetections:
             self.filtered_masks = [self.detected_masks_list_full[i] for i in self.filtered_indices]
         else:
             self.filtered_masks = []
-        
+
         # Polygons filtering:
         if element_crops.segment and element_crops.memory_optimize:
             self.filtered_polygons = [self.detected_polygons_list_full[i] for i in self.filtered_indices]
@@ -155,13 +161,13 @@ class CombineDetections:
         # Create the bounds
         step = 1 / N
         bounds = np.arange(0, 1 + step, step)
-        
+
         # Use np.digitize to determine the corresponding bin for each value
         indices = np.digitize(confidences, bounds, right=True) - 1
-        
+
         # Bind values to the left boundary of the corresponding bin
         averaged_confidences = np.round(bounds[indices], 2) 
-        
+
         return averaged_confidences.tolist()
 
     @staticmethod
@@ -196,7 +202,8 @@ class CombineDetections:
             masks_list (list of np.ndarray): List of binary masks for comparison.
 
         Returns:
-            torch.Tensor: IoU scores for each mask in masks_list compared to the input mask, calculated over the smaller area.
+            torch.Tensor: IoU scores for each mask in masks_list compared to the input mask,
+                calculated over the smaller area.
         """
         ios_scores = []
         for other_mask in masks_list:
@@ -210,34 +217,33 @@ class CombineDetections:
 
     def nms(
         self,
-        confidences: list,
-        boxes: list,
+        confidences: torch.tensor,
+        boxes: torch.tensor,
         match_metric,
         nms_threshold,
-        masks=None,
-        intelligent_sorter=False,
+        masks=[],
+        intelligent_sorter=False, 
+        cls_indexes=None 
     ):
         """
-        Apply non-maximum suppression to avoid detecting too many
+        Apply class-agnostic non-maximum suppression to avoid detecting too many
         overlapping bounding boxes for a given object.
 
         Args:
-            confidences (list): List of confidence scores.
-            boxes (list): List of bounding boxes.
+            confidences (torch.Tensor): List of confidence scores.
+            boxes (torch.Tensor): List of bounding boxes.
             match_metric (str): Matching metric, either 'IOU' or 'IOS'.
             nms_threshold (float): The threshold for match metric.
-            masks (list, optional): List of masks. Defaults to None.
+            masks (list): List of masks. 
             intelligent_sorter (bool, optional): intelligent sorter 
+            cls_indexes (torch.Tensor):  indexes from network detections corresponding
+                to the defined class,  uses in case of not agnostic nms
 
         Returns:
             list: List of filtered indexes.
         """
         if len(boxes) == 0:
             return []
-
-        # Convert lists to tensors
-        boxes = torch.tensor(boxes)
-        confidences = torch.tensor(confidences)
 
         # Extract coordinates for every prediction box present
         x1 = boxes[:, 0]
@@ -254,7 +260,10 @@ class CombineDetections:
             order = torch.tensor(
                 sorted(
                     range(len(confidences)),
-                    key=lambda k: (self.average_to_bound(confidences[k].item(), self.sorter_bins), areas[k]),
+                    key=lambda k: (
+                        self.average_to_bound(confidences[k].item(), self.sorter_bins),
+                        areas[k],
+                    ),
                     reverse=False,
                 )
             )
@@ -320,7 +329,7 @@ class CombineDetections:
 
             # If masks are provided and IoU based on bounding boxes is greater than 0,
             # calculate IoU for masks and keep the ones with IoU < nms_threshold
-            if masks is not None and torch.any(match_metric_value > 0):
+            if len(masks) > 0 and torch.any(match_metric_value > 0):
 
                 mask_mask = match_metric_value > 0 
 
@@ -346,5 +355,58 @@ class CombineDetections:
                 mask = match_metric_value < nms_threshold
 
                 order = order[mask]
-
+        if cls_indexes is not None:
+            keep = [cls_indexes[i] for i in keep]
         return keep
+
+    def not_agnostic_nms(
+            self,
+            detected_cls_id_list_full,
+            detected_conf_list_full, 
+            detected_xyxy_list_full, 
+            match_metric, 
+            nms_threshold, 
+            detected_masks_list_full, 
+            intelligent_sorter
+                     ):
+        '''
+            Performs Non-Maximum Suppression (NMS) in a non-agnostic manner, where NMS 
+            is applied separately to each class.
+
+            Args:
+                detected_cls_id_list_full (torch.Tensor): tensor containing the class IDs for each detected object.
+                detected_conf_list_full (torch.Tensor):  tensor of confidence scores.
+                detected_xyxy_list_full (torch.Tensor): tensor of bounding boxes.
+                match_metric (str): Matching metric, either 'IOU' or 'IOS'.
+                nms_threshold (float): the threshold for match metric.
+                detected_masks_list_full (torch.Tensor):  List of masks. 
+                intelligent_sorter (bool, optional): intelligent sorter 
+
+            Returns:
+                List[int]: A list of indices representing the detections that are kept after applying
+                    NMS for each class separately.
+
+            Notes:
+                - This method performs NMS separately for each class, which helps in
+                    reducing false positives within each class.
+                - If in your scenario, an object of one class can physically be inside
+                    an object of another class, you should definitely use this non-agnostic nms
+            '''
+        all_keeps = []
+        for cls in torch.unique(detected_cls_id_list_full):
+            cls_indexes = torch.where(detected_cls_id_list_full==cls)[0]
+            if len(detected_masks_list_full) > 0:
+                masks_of_class = [detected_masks_list_full[i] for i in cls_indexes]
+            else:
+                masks_of_class = []
+            keep_indexes = self.nms(
+                    detected_conf_list_full[cls_indexes],
+                    detected_xyxy_list_full[cls_indexes],
+                    match_metric,
+                    nms_threshold,
+                    masks_of_class,
+                    intelligent_sorter,
+                    cls_indexes
+                )
+            all_keeps.extend(keep_indexes)
+        return all_keeps

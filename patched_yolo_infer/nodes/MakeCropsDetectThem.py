@@ -19,7 +19,7 @@ class MakeCropsDetectThem:
         iou (float): IoU threshold for non-maximum suppression YOLOv8 of single crop.
         classes_list (List[int] or None): List of classes to filter detections. If None, 
                                           all classes are considered. Defaults to None.
-        segment (bool): Whether to perform segmentation (YOLOv8-seg).
+        segment (bool): Whether to perform segmentation (YOLO-seg).
         shape_x (int): Size of the crop in the x-coordinate.
         shape_y (int): Size of the crop in the y-coordinate.
         overlap_x (int): Percentage of overlap along the x-axis.
@@ -42,7 +42,7 @@ class MakeCropsDetectThem:
         iou (float): IoU threshold for non-maximum suppression.
         classes_list (List[int] or None): List of classes to filter detections. If None, 
                                           all classes are considered. Defaults to None.
-        segment (bool): Whether to perform segmentation (YOLOv8-seg).
+        segment (bool): Whether to perform segmentation (YOLO-seg).
         shape_x (int): Size of the crop in the x-coordinate.
         shape_y (int): Size of the crop in the y-coordinate.
         overlap_x (int): Percentage of overlap along the x-axis.

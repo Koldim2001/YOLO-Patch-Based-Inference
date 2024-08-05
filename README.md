@@ -19,7 +19,7 @@ You can install the library via pip:
 pip install patched_yolo_infer
 ```
 
-[![PyPI Version](https://img.shields.io/pypi/v/patched-yolo-infer.svg)](https://pypi.org/project/patched-yolo-infer/) - Click here to visit the PyPI page for `patched-yolo-infer`, where you can find more information and documentation.
+[![PyPI Version](https://img.shields.io/pypi/v/patched-yolo-infer.svg)](https://pypi.org/project/patched-yolo-infer/) - Click here to visit the PyPI page of `patched-yolo-infer`.
 
 Note: If CUDA support is available, it's recommended to pre-install PyTorch with CUDA support before installing the library. Otherwise, the CPU version will be installed by default.
 
@@ -78,7 +78,7 @@ import cv2
 from patched_yolo_infer import MakeCropsDetectThem, CombineDetections
 
 # Load the image 
-img_path = 'test_image.jpg'
+img_path = "test_image.jpg"
 img = cv2.imread(img_path)
 
 element_crops = MakeCropsDetectThem(
@@ -111,7 +111,7 @@ Class implementing cropping and passing crops through a neural network for detec
 
 | **Argument**          | **Type**               | **Default**  | **Description**                                                                                                |
 |-----------------------|------------------------|--------------|----------------------------------------------------------------------------------------------------------------|
-| image                 | np.ndarray             |              | Input image BGR.                                                                                               |
+| image                 | np.ndarray             |              | 	The input image in BGR format.                                                                                               |
 | model_path            | str                    | "yolov8m.pt" | Path to the YOLO model.                                                                                        |
 | model                 | ultralytics model      | None         | Pre-initialized model object. If provided, the model will be used directly instead of loading from model_path. |
 | imgsz                 | int                    | 640          | Size of the input image for inference YOLO.                                                                    |
@@ -138,8 +138,9 @@ Class implementing combining masks/boxes from multiple crops + NMS (Non-Maximum 
 | element_crops        |MakeCropsDetectThem|             | Object containing crop information.                                                                                     |
 | nms_threshold        | float             | 0.3         | IoU/IoS threshold for non-maximum suppression. The lower the value, the fewer objects remain after suppression.                                                                          |
 | match_metric         | str               | IOS         | Matching metric, either 'IOU' or 'IOS'.                                                                                 |
+| class_agnostic_nms   | bool              | True         | Determines the NMS mode in object detection. When set to True, NMS operates across all classes, ignoring class distinctions and suppressing less confident bounding boxes globally. Otherwise, NMS is applied separately for each class. |
 | intelligent_sorter   | bool              | True        | Enable sorting by area and rounded confidence parameter. If False, sorting will be done only by confidence (usual nms). |
-| sorter_bins          | int               | 10          | Number of bins to use for intelligent_sorter. A smaller number of bins makes the NMS more reliant on object sizes rather than confidence scores. |
+| sorter_bins          | int               | 5           | Number of bins to use for intelligent_sorter. A smaller number of bins makes the NMS more reliant on object sizes rather than confidence scores. |
 
 
 
@@ -207,9 +208,12 @@ visualize_results(
 
 4. **Enhancing Detection Within Patches**: To detect more objects within a single crop, increase the `imgsz` parameter and lower the confidence threshold (`conf`). All parameters available for configuring Ultralytics model inference are also accessible during the initialization of the `MakeCropsDetectThem` element.
 
-5. **Handling Duplicate Suppression Issues**: If you encounter issues with duplicate suppression from overlapping patches, consider adjusting the `nms_threshold` and `sorter_bins` parameters in `CombineDetections` or modifying the overlap and size parameters of the patches themselves. (PS: often lowering `sorter_bins` to 5 or 4 can help).
+5. **Handling Duplicate Suppression Issues**: If you encounter issues with duplicate suppression from overlapping patches, consider adjusting the `nms_threshold` and `sorter_bins` parameters in `CombineDetections` or modifying the overlap and size parameters of the patches themselves. (PS: often lowering `sorter_bins` to 4 or 2 can help).
 
-6. **High-Quality Instance Segmentation**: For tasks requiring high-quality results in instance segmentation, detailed guidance is provided in the next section of the README.
+6. **Handling Multi-Class Detection Issues**: If you are working on a multi-class detection or instance segmentation task, it may be beneficial to switch the mode to `class_agnostic_nms=False` in the `CombineDetections` parameters. The default mode, with `class_agnostic_nms` set to True, is particularly effective when handling a large number of closely related classes in pre-trained YOLO networks (for example, when there is often confusion between classes like `car` and `truck`). If in your scenario, an object of one class can physically be inside an object of another class, you should definitely set `class_agnostic_nms=False` for such cases.
+
+7. **High-Quality Instance Segmentation**: For tasks requiring high-quality results in instance segmentation, detailed guidance is provided in the next section of the README.
+
 ---
 
 ## __How to improve the quality of the algorithm for the task of instance segmentation:__
@@ -244,6 +248,47 @@ classes_names=result.filtered_classes_names
 
 An example of working with this mode is presented in Google Colab notebook - [![Open In Colab][colab_badge]][colab_ex1_memory_optimize]
 
+---
+
+## __How to automatically determine optimal parameters for patches (crops):__
+
+To efficiently process a large number of images of varying sizes and contents, manually selecting the optimal patch sizes and overlaps can be difficult.. To address this, an algorithm has been developed to automatically calculate the best parameters for patches (crops).
+
+The  `auto_calculate_crop_values` function operates in two modes:
+
+1. **Resolution-Based Analysis**: This mode evaluates the resolution of the source images to determine the optimal patch sizes and overlaps. It is faster but may not yield the highest quality results because it does not take into account the actual objects present in the images.
+
+2. **Neural Network-Based Analysis**: This advanced mode employs a neural network to analyze the images. The algorithm performs a standard inference of the network on the entire image and identifies the largest detected objects. Based on the sizes of these objects, the algorithm selects patch parameters to ensure that the largest objects are fully contained within a patch, and overlapping patches ensure comprehensive coverage. In this mode, it is necessary to input the model that will be used for patch-based inference in the subsequent steps.
+
+Possible arguments of the ```auto_calculate_crop_values``` function:
+| **Argument**          | **Type**               | **Default**  | **Description**                                                                                                |
+|-----------------------|------------------------|--------------|----------------------------------------------------------------------------------------------------------------|
+| image                 | np.ndarray             |              | 	The input image in BGR format.                                                                                                            |
+| mode                 | str      | "network_based"   | The type of analysis to perform. Can be "resolution_based" for Resolution-Based Analysis or "network_based" for Neural Network-Based Analysis.|
+| model                 | ultralytics model      | YOLO("yolov8m.pt")   | Pre-initialized model object for "network_based" mode. If not provided, the default YOLOv8m model will be used.|
+| classes_list          | list                   | None          | A list of class indices to consider for object detection in "network_based" mode. If None, all classes will be considered. |
+| conf                  | float                  | 0.25          | The confidence threshold for detection in "network_based" mode. |
+
+Example of using:
+```python
+import cv2
+from ultralytics import YOLO
+from patched_yolo_infer import auto_calculate_crop_values
+
+# Load the image
+img_path = "test_image.jpg"
+img = cv2.imread(img_path)
+
+# Calculate the optimal crop size and overlap for an image
+shape_x, shape_y, overlap_x, overlap_y = auto_calculate_crop_values(
+    image=img, mode="network_based", model=YOLO("yolov8m.pt")
+)
+```
+
+An example of working with `auto_calculate_crop_values` is presented in Google Colab notebook - [![Open In Colab][colab_badge]][colab_ex1_auto_calculate_crop_values]
+
+
+
 [nb_example1]: https://nbviewer.org/github/Koldim2001/YOLO-Patch-Based-Inference/blob/main/examples/example_patch_based_inference.ipynb
 [colab_badge]: https://colab.research.google.com/assets/colab-badge.svg
 [colab_ex1]: https://colab.research.google.com/drive/1XCpIYLMFEmGSO0XCOkSD7CcD9SFHSJPA?usp=sharing
@@ -252,3 +297,4 @@ An example of working with this mode is presented in Google Colab notebook - [![
 [colab_ex2]: https://colab.research.google.com/drive/1eM4o1e0AUQrS1mLDpcgK9HKInWEvnaMn?usp=sharing
 [yt_link2]: https://www.youtube.com/watch?v=nBQuWa63188
 [colab_ex1_memory_optimize]: https://colab.research.google.com/drive/1XCpIYLMFEmGSO0XCOkSD7CcD9SFHSJPA?usp=sharing#scrollTo=DM_eCc3yXzXW
+[colab_ex1_auto_calculate_crop_values]: https://FIX

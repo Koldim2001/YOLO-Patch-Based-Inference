@@ -3,6 +3,7 @@ import cv2
 import random
 import numpy as np
 import matplotlib.pyplot as plt
+from ultralytics import YOLO
 
 
 def visualize_results_usual_yolo_inference(
@@ -57,9 +58,9 @@ def visualize_results_usual_yolo_inference(
         axis_off (bool): If True, axis is turned off in the final visualization.
         show_classes_list (list): If empty, visualize all classes. Otherwise, visualize only classes in the list.
         inference_extra_args (dict/None): Dictionary with extra ultralytics inference parameters.
-        list_of_class_colors (list/None): A list of tuples representing the colors for each class in BGR format. If provided,  
-                    these colors will be used for displaying the classes instead of random colors. The number of tuples 
-                    in the list must match the number of possible classes in the network.
+        list_of_class_colors (list/None): A list of tuples representing the colors for each class in BGR format.  
+                    If provided, these colors will be used for displaying the classes instead of random colors. 
+                    The number of tuples in the list must match the number of possible classes in the network.
         return_image_array (bool): If True, the function returns the image bgr array instead of displaying it. 
                                    Default is False.
 
@@ -313,10 +314,11 @@ def visualize_results(
         show_confidences (bool): If true and show_class=True, confidences near class are visualized. Default is False.
         axis_off (bool): If true, axis is turned off in the final visualization. Default is True.
         show_classes_list (list): If empty, visualize all classes. Otherwise, visualize only classes in the list.
-        list_of_class_colors (list/None): A list of tuples representing the colors for each class in BGR format. If provided,  
-                    these colors will be used for displaying the classes instead of random colors. The number of tuples 
-                    in the list must match the number of possible classes in the network.
-        return_image_array (bool): If True, the function returns the image bgr array instead of displaying it. Default is False.
+        list_of_class_colors (list/None): A list of tuples representing the colors for each class in BGR format. 
+                    If provided, these colors will be used for displaying the classes instead of random colors. 
+                    The number of tuples in the list must match the number of possible classes in the network.
+        return_image_array (bool): If True, the function returns the image bgr array instead of displaying it.
+                    Default is False.
                                    
     Returns:
         None/np.array
@@ -460,3 +462,138 @@ def create_masks_from_polygons(polygons, image):
         masks.append(mask)
     
     return masks
+
+
+def basic_crop_size_calculation(width, height):
+    """
+    Calculate the basic crop size and overlap based on the image dimensions.
+
+    This function determines the optimal crop size and overlap for an image based on its width and height.
+    The function uses predefined thresholds to decide the crop size and overlap, ensuring efficient processing
+    for different image resolutions.
+
+    Parameters:
+    width (int): The width of the image in pixels.
+    height (int): The height of the image in pixels.
+
+    Returns:
+    tuple: A tuple containing the crop size in the x direction (crop_shape_x), crop size in the y direction
+        (crop_shape_y), overlap in the x direction (crop_overlap_x), and overlap in the y direction (crop_overlap_y).
+    """
+    total_pixels = width * height
+
+    if total_pixels <= 640*480:
+        crop_shape_x, crop_shape_y = width, height
+        crop_overlap_x, crop_overlap_y = 0, 0
+    elif total_pixels < 720*576:
+        crop_shape_x, crop_shape_y = int(width / 1.25), int(height / 1.25)
+        crop_overlap_x, crop_overlap_y = 50, 50
+    elif total_pixels < 1920*1080:
+        crop_shape_x, crop_shape_y = width // 2, height // 2
+        crop_overlap_x, crop_overlap_y = 40, 40
+    elif total_pixels < 3840*2160:
+        crop_shape_x, crop_shape_y = width // 3, height // 3
+        crop_overlap_x, crop_overlap_y = 30, 30
+    elif total_pixels < 7680*4320:
+        crop_shape_x, crop_shape_y = width // 4, height // 4
+        crop_overlap_x, crop_overlap_y = 25, 25
+    else:
+        crop_shape_x, crop_shape_y = width // 5, height // 5
+        crop_overlap_x, crop_overlap_y = 25, 25
+
+    return crop_shape_x, crop_shape_y, crop_overlap_x, crop_overlap_y
+
+
+def auto_calculate_crop_values(image, mode="network_based", model=None, classes_list=None, conf=0.25):
+    """
+    Automatically calculate the optimal crop size and overlap for an image.
+
+    This function determines the optimal crop size and overlap for an image based on either the image size
+    or the detected objects within the image. The function can use a YOLO model to detect objects and adjust
+    the crop size and overlap accordingly.
+
+    Parameters:
+    image (numpy.ndarray): The input BGR image.
+    mode (str): The type of analysis to perform. Can be "resolution_based" or "network_based". 
+        Default is "network_analysis".
+    model (YOLO): The YOLO model to use for object detection. If None, a default model yolov8m
+        will be loaded. Default is None.
+    classes_list (list): A list of class indices to consider for object detection. If None, all classes 
+        will be considered. Default is None.
+    conf (float): The confidence threshold for detection in "network_based" mode. Default is 0.25.
+
+    Returns:
+    tuple: A tuple containing the crop size in the x direction (crop_shape_x), crop size in the y direction 
+        (crop_shape_y), overlap in the x direction (crop_overlap_x), and overlap in the y direction (crop_overlap_y).
+    """
+    height, width = image.shape[:2]
+
+    # If the mode is 'image_size_analysis', calculate crop size based on image dimensions
+    if mode == 'resolution_based':
+        crop_shape_x, crop_shape_y, crop_overlap_x, crop_overlap_y = basic_crop_size_calculation(
+            width, height
+        )
+    else:
+        # If no model is provided, load a default YOLO model
+        if model is None:
+            model = YOLO("yolov8m.pt")
+
+        # Perform object detection on the image
+        result = model.predict(image, conf=conf, iou=0.75, classes=classes_list, verbose=False)
+
+        # If no objects are detected, calculate crop size based on image dimensions
+        if len(result[0].boxes) == 0:
+            crop_shape_x, crop_shape_y, crop_overlap_x, crop_overlap_y = (
+                basic_crop_size_calculation(width, height)
+            )
+            return crop_shape_x, crop_shape_y, crop_overlap_x, crop_overlap_y
+
+        max_width = 0
+        max_height = 0
+
+        # Iterate through detected boxes to find the maximum width and height
+        for box in result[0].boxes:
+            _, _, box_width, box_height = box.xywh[0].tolist()  
+            if box_width > max_width:
+                max_width = box_width
+            if box_height > max_height:
+                max_height = box_height
+
+        # Determine the maximum dimension (width or height) of the detected objects
+        max_value = max(max_width, max_height)
+
+        # Adjust crop size and overlap based on the maximum detected object dimension
+        if width > height:
+            crop_shape_x = int(max_value * 3)  
+            crop_shape_y = int(max_value * 2)
+        elif width < height:
+            crop_shape_x = int(max_value * 2)  
+            crop_shape_y = int(max_value * 3)
+        else:
+            crop_shape_x = int(max_value * 2.5)  
+            crop_shape_y = int(max_value * 2.5)
+
+        crop_overlap_x = int(max_width/crop_shape_x * 1.2 * 100)
+        crop_overlap_y = int(max_height/crop_shape_y * 1.2 * 100)
+
+        # Ensure the overlap does not exceed 70%
+        if crop_overlap_x > 70:
+            crop_overlap_x = 70
+        if crop_overlap_y > 70:
+            crop_overlap_y = 70    
+
+        # Ensure the number of crops does not exceed 7 in each direction
+        if height // crop_shape_y > 7:
+            crop_shape_y = height // 7
+        if width // crop_shape_x > 7:
+            crop_shape_x = width // 7
+
+        # Handling cases where patches are not needed along the axes
+        if height / crop_shape_y < 1.25:
+            crop_shape_y = height
+            crop_overlap_y = 0
+        if width / crop_shape_x < 1.25:
+            crop_shape_x = width
+            crop_overlap_x = 0
+
+    return crop_shape_x, crop_shape_y, crop_overlap_x, crop_overlap_y
