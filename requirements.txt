@@ -1,5 +1,4 @@
 numpy<2.0
-torch
 opencv-python
 matplotlib
 ultralytics
