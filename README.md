@@ -296,4 +296,4 @@ An example of working with `auto_calculate_crop_values` is presented in Google C
 [colab_ex2]: https://colab.research.google.com/drive/1eM4o1e0AUQrS1mLDpcgK9HKInWEvnaMn?usp=sharing
 [yt_link2]: https://www.youtube.com/watch?v=nBQuWa63188
 [colab_ex1_memory_optimize]: https://colab.research.google.com/drive/1XCpIYLMFEmGSO0XCOkSD7CcD9SFHSJPA?usp=sharing#scrollTo=DM_eCc3yXzXW
-[colab_ex1_auto_calculate_crop_values]: https://FIX
+[colab_ex1_auto_calculate_crop_values]: https://colab.research.google.com/drive/1XCpIYLMFEmGSO0XCOkSD7CcD9SFHSJPA?usp=sharing#scrollTo=Wkt1FkAkhCwQ
