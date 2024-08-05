@@ -17,7 +17,7 @@ class CombineDetections:
         intelligent_sorter (bool): Enable sorting by area and rounded confidence parameter. 
             If False, sorting will be done only by confidence (usual nms). Dafault is True.
         sorter_bins (int): Number of bins to use for intelligent_sorter. A smaller number of bins makes
-            the NMS more reliant on object sizes rather than confidence scores. Defaults to 10.
+            the NMS more reliant on object sizes rather than confidence scores. Defaults to 5.
 
     Attributes:
         class_names (dict): Dictionary containing class names of yolo model.
