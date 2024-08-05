@@ -71,7 +71,7 @@ class MakeCropsDetectThem:
         overlap_x=25,
         overlap_y=25,
         show_crops=False,
-        resize_initial_size=False,
+        resize_initial_size=True,
         model=None,
         memory_optimize=True,
         inference_extra_args=None,

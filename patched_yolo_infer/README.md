@@ -67,7 +67,6 @@ element_crops = MakeCropsDetectThem(
     overlap_y=50,
     conf=0.5,
     iou=0.7,
-    resize_initial_size=True,
 )
 result = CombineDetections(element_crops, nms_threshold=0.25)  
 

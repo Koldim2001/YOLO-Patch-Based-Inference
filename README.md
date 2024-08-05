@@ -91,7 +91,6 @@ element_crops = MakeCropsDetectThem(
     overlap_y=50,
     conf=0.5,
     iou=0.7,
-    resize_initial_size=True,
 )
 result = CombineDetections(element_crops, nms_threshold=0.25)  
 
@@ -124,7 +123,7 @@ Class implementing cropping and passing crops through a neural network for detec
 | overlap_x             | float                  | 25           | Percentage of overlap along the x-axis.                                                                        |
 | overlap_y             | float                  | 25           | Percentage of overlap along the y-axis.                                                                        |
 | show_crops            | bool                   | False        | Whether to visualize the cropping.                                                                             |
-| resize_initial_size   | bool                   | False        | Whether to resize the results to the original input image size (ps: slow operation).                           |
+| resize_initial_size   | bool                   | True        | Whether to resize the results to the original input image size (ps: slow operation).                           |
 | memory_optimize       | bool                   | True         | Memory optimization option for segmentation (less accurate results when enabled).                              |
 | inference_extra_args  | dict                   | None         | Dictionary with extra ultralytics [inference parameters](https://docs.ultralytics.com/modes/predict/#inference-arguments) (possible keys: half, device, max_det, augment, agnostic_nms and retina_masks) |
 | batch_inference       | bool                   | False        | Batch inference of image crops through a neural network instead of sequential passes of crops (ps: faster inference, higher gpu memory use).                           |
