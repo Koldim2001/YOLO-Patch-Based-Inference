@@ -80,7 +80,7 @@ def visualize_results_usual_yolo_inference(
     class_names = model.names
 
     # Map class IDs to indices in the color list
-    all_classes = sorted(set(cls for pred in predictions for cls in pred.boxes.cls.cpu().int().tolist()))
+    all_classes = set(cls for pred in predictions for cls in pred.boxes.cls.cpu().int().tolist())
     class_to_color_index = {cls_id: idx for idx, cls_id in enumerate(all_classes)}
 
     # Process each prediction
@@ -120,7 +120,7 @@ def visualize_results_usual_yolo_inference(
                 random.seed(int(classes[i] + delta_colors))
                 color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
             else:
-                color = list_of_class_colors[classes[i]]
+                color = list_of_class_colors[class_to_color_index[class_index]]
 
             box = boxes[i]
             x_min, y_min, x_max, y_max = box
@@ -340,7 +340,7 @@ def visualize_results(
         random.seed(int(delta_colors))
 
     # Map class IDs to indices in the color list
-    unique_classes = sorted(set(classes_ids))
+    unique_classes = set(classes_ids)
     class_to_color_index = {cls_id: idx for idx, cls_id in enumerate(unique_classes)}
 
     # Process each prediction
@@ -361,7 +361,7 @@ def visualize_results(
             random.seed(int(classes_ids[i] + delta_colors))
             color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
         else:
-            color = list_of_class_colors[classes_ids[i]]
+            color = list_of_class_colors[class_to_color_index[classes_ids[i]]]
 
         box = boxes[i]
         x_min, y_min, x_max, y_max = box
