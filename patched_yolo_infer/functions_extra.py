@@ -46,7 +46,7 @@ def visualize_results_usual_yolo_inference(
         show_class (bool): Whether to show class labels. Default is True.
         fill_mask (bool): Whether to fill the segmented regions with color. Default is False.
         alpha (float): The transparency of filled masks. Default is 0.3.
-        color_class_background (tuple): The background BGR color for class labels. Default is (0, 0, 255) (red).
+        color_class_background (tuple / list of tuple): The background BGR color for class labels. Default is (0, 0, 255) (red).
         color_class_text (tuple): The text BGR color for class labels. Default is (255, 255, 255) (white).
         thickness (int): The thickness of bounding box and text. Default is 4.
         font: The font type for class labels. Default is cv2.FONT_HERSHEY_SIMPLEX.
@@ -78,6 +78,10 @@ def visualize_results_usual_yolo_inference(
         random.seed(int(delta_colors))
 
     class_names = model.names
+
+    # Map class IDs to indices in the color list
+    all_classes = set(cls for pred in predictions for cls in pred.boxes.cls.cpu().int().tolist())
+    class_to_color_index = {cls_id: idx for idx, cls_id in enumerate(all_classes)}
 
     # Process each prediction
     for pred in predictions:
@@ -116,7 +120,7 @@ def visualize_results_usual_yolo_inference(
                 random.seed(int(classes[i] + delta_colors))
                 color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
             else:
-                color = list_of_class_colors[classes[i]]
+                color = list_of_class_colors[class_to_color_index[class_index]]
 
             box = boxes[i]
             x_min, y_min, x_max, y_max = box
@@ -143,11 +147,16 @@ def visualize_results_usual_yolo_inference(
                 else:
                     label = str(class_name)
                 (text_width, text_height), _ = cv2.getTextSize(label, font, font_scale, thickness)
+                background_color = (
+                    color_class_background[class_to_color_index[class_index]]
+                    if isinstance(color_class_background, list)
+                    else color_class_background
+                )
                 cv2.rectangle(
                     labeled_image,
                     (x_min, y_min),
                     (x_min + text_width + 5, y_min + text_height + 5),
-                    color_class_background,
+                    background_color,
                     -1,
                 )
                 cv2.putText(
@@ -303,7 +312,7 @@ def visualize_results(
         show_class (bool): Whether to show class labels. Default is True.
         fill_mask (bool): Whether to fill the segmented regions with color. Default is False.
         alpha (float): The transparency of filled masks. Default is 0.3.
-        color_class_background (tuple): The background BGR color for class labels. Default is (0, 0, 255) (red).
+        color_class_background (tuple / list of tuple): The background BGR color for class labels. Default is (0, 0, 255) (red).
         color_class_text (tuple): The text BGR color for class labels. Default is (255, 255, 255) (white).
         thickness (int): The thickness of bounding box and text. Default is 4.
         font: The font type for class labels. Default is cv2.FONT_HERSHEY_SIMPLEX.
@@ -330,6 +339,10 @@ def visualize_results(
     if random_object_colors:
         random.seed(int(delta_colors))
 
+    # Map class IDs to indices in the color list
+    unique_classes = set(classes_ids)
+    class_to_color_index = {cls_id: idx for idx, cls_id in enumerate(unique_classes)}
+
     # Process each prediction
     for i in range(len(classes_ids)):
         # Get the class for the current detection
@@ -348,7 +361,7 @@ def visualize_results(
             random.seed(int(classes_ids[i] + delta_colors))
             color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
         else:
-            color = list_of_class_colors[classes_ids[i]]
+            color = list_of_class_colors[class_to_color_index[classes_ids[i]]]
 
         box = boxes[i]
         x_min, y_min, x_max, y_max = box
@@ -395,11 +408,16 @@ def visualize_results(
             else:
                 label = str(class_name)
             (text_width, text_height), _ = cv2.getTextSize(label, font, font_scale, thickness)
+            background_color = (
+                color_class_background[class_to_color_index[classes_ids[i]]]
+                if isinstance(color_class_background, list)
+                else color_class_background
+            )
             cv2.rectangle(
                 labeled_image,
                 (x_min, y_min),
                 (x_min + text_width + 5, y_min + text_height + 5),
-                color_class_background,
+                background_color,
                 -1,
             )
             cv2.putText(
