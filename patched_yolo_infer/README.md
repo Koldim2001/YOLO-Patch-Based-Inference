@@ -130,7 +130,7 @@ Visualizes custom results of object detection or segmentation on an image.
 - **show_class** (*bool*): Whether to show class labels. Default is True.
 - **fill_mask** (*bool*): Whether to fill the segmented regions with color. Default is False.
 - **alpha** (*float*): The transparency of filled masks. Default is 0.3.
-- **color_class_background** (*tuple*): The background BGR color for class labels. Default is (0, 0, 255) (red).
+- **color_class_background** (*tuple/list*): The background BGR color for class labels. If you pass a list of tuples, then each class will have its own color. Default is (0, 0, 255) (red).
 - **color_class_text** (*tuple*): The text color for class labels. Default is (255, 255, 255) (white).
 - **thickness** (*int*): The thickness of bounding box and text. Default is 4.
 - **font**: The font type for class labels. Default is cv2.FONT_HERSHEY_SIMPLEX.

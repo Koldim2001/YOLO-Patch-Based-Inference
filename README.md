@@ -162,7 +162,7 @@ Possible arguments of the ```visualize_results``` function:
 | show_class              | bool            | True          | Whether to show class labels.                                                                 |
 | fill_mask               | bool            | False         | Whether to fill the segmented regions with color.                                             |
 | alpha                   | float           | 0.3           | The transparency of filled masks.                                                             |
-| color_class_background  | tuple           | (0, 0, 255)   | The background BGR color for class labels.                                                    |
+| color_class_background  | tuple / list          | (0, 0, 255)   | The background BGR color for class labels. If you pass a list of tuples, then each class will have its own color.                                                  |
 | color_class_text        | tuple           |(255, 255, 255)| The text color for class labels.                                                              |
 | thickness               | int             | 4             | The thickness of bounding box and text.                                                       |
 | font                    | cv2.font        |cv2.FONT_HERSHEY_SIMPLEX | The font type for class labels.                                                     |
