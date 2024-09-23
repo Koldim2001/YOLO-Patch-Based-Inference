@@ -8,7 +8,7 @@ with codecs.open(os.path.join(pwd, "patched_yolo_infer/README.md"), encoding="ut
     long_description = "\n" + fh.read()
 
 
-VERSION = '1.3.0'
+VERSION = '1.3.1'
 DESCRIPTION = '''Patch-Based-Inference for detection/segmentation of small objects in images.'''
 
 setup(
