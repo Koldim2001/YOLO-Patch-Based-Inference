@@ -105,7 +105,7 @@ Class implementing cropping and passing crops through a neural network for detec
 **CombineDetections**
 Class implementing combining masks/boxes from multiple crops + NMS (Non-Maximum Suppression).\
 **Args:**
-- **element_crops** (*MakeCropsDetectThem*): Object containing crop information.
+- **element_crops** (*MakeCropsDetectThem*): Object containing crop information. This can be either a single MakeCropsDetectThem object or a list of objects. 
 - **nms_threshold** (*float*): IoU/IoS threshold for non-maximum suppression.
 - **match_metric** (*str*): Matching metric, either 'IOU' or 'IOS'.
 - **class_agnostic_nms** (*bool*) Determines the NMS mode in object detection. When set to True, NMS operates across all classes, ignoring class distinctions and suppressing less confident bounding boxes globally. Otherwise, NMS is applied separately for each class. (Default is True)
