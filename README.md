@@ -305,4 +305,4 @@ An example of using this approach can be seen in this Google Colab notebook - [!
 [yt_link2]: https://www.youtube.com/watch?v=nBQuWa63188
 [colab_ex1_memory_optimize]: https://colab.research.google.com/drive/1XCpIYLMFEmGSO0XCOkSD7CcD9SFHSJPA?usp=sharing#scrollTo=DM_eCc3yXzXW
 [colab_ex1_auto_calculate_crop_values]: https://colab.research.google.com/drive/1XCpIYLMFEmGSO0XCOkSD7CcD9SFHSJPA?usp=sharing#scrollTo=Wkt1FkAkhCwQ
-[colab_ex1_different_resolutions]: !!!
+[colab_ex1_different_resolutions]: https://colab.research.google.com/drive/1XCpIYLMFEmGSO0XCOkSD7CcD9SFHSJPA?usp=sharing#scrollTo=L6wyyDIlXdr1
