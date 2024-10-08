@@ -223,3 +223,9 @@ shape_x, shape_y, overlap_x, overlap_y = auto_calculate_crop_values(
     image=img, mode="network_based", model=YOLO("yolov8m.pt")
 )
 ```
+
+---
+
+## __Implementing Patching at Different Resolutions__
+
+There is an opportunity to produce cropping into patches at different resolutions. This way, small objects can be detected when cropping into smaller patches, and large objects can be detected when cropping into larger patches. As a result, the algorithm will be able to detect a wider range of object sizes in the frame. To achieve this, the image needs to be processed multiple times through MakeCropsDetectThem with different patch parameters, and then pass the list of element_crops to the CombineDetections process.
