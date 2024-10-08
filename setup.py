@@ -33,7 +33,7 @@ setup(
         "yolov8",
         "yolov9",
         "yolov10",
-        "yolov11",
+        "yolo11",
         "rtdetr",
         "fastsam",
         "sahi",
