@@ -134,7 +134,7 @@ Class implementing combining masks/boxes from multiple crops + NMS (Non-Maximum 
 
 | **Argument**         | **Type**          | **Default** | **Description**                                                                                                         |
 |----------------------|-------------------|-------------|-------------------------------------------------------------------------------------------------------------------------|
-| element_crops        |MakeCropsDetectThem|             | Object containing crop information.                                                                                     |
+| element_crops        |MakeCropsDetectThem|             | Object containing crop information. This can be either a single MakeCropsDetectThem object or a list of objects.                                                                                    |
 | nms_threshold        | float             | 0.3         | IoU/IoS threshold for non-maximum suppression. The lower the value, the fewer objects remain after suppression.                                                                          |
 | match_metric         | str               | IOS         | Matching metric, either 'IOU' or 'IOS'.                                                                                 |
 | class_agnostic_nms   | bool              | True         | Determines the NMS mode in object detection. When set to True, NMS operates across all classes, ignoring class distinctions and suppressing less confident bounding boxes globally. Otherwise, NMS is applied separately for each class. |
@@ -286,6 +286,14 @@ shape_x, shape_y, overlap_x, overlap_y = auto_calculate_crop_values(
 
 An example of working with `auto_calculate_crop_values` is presented in Google Colab notebook - [![Open In Colab][colab_badge]][colab_ex1_auto_calculate_crop_values]
 
+---
+
+
+## __Implementing Patching at Different Resolutions__
+
+There is an opportunity to produce cropping into patches at different resolutions. This way, small objects can be detected when cropping into smaller patches, and large objects can be detected when cropping into larger patches. As a result, the algorithm will be able to detect a wider range of object sizes in the frame. To achieve this, the image needs to be processed multiple times through MakeCropsDetectThem with different patch parameters, and then pass the list of element_crops to the CombineDetections process.
+
+An example of using this approach can be seen in this Google Colab notebook - [![Open In Colab][colab_badge]][colab_ex1_different_resolutions]
 
 
 [nb_example1]: https://nbviewer.org/github/Koldim2001/YOLO-Patch-Based-Inference/blob/main/examples/example_patch_based_inference.ipynb
@@ -297,3 +305,4 @@ An example of working with `auto_calculate_crop_values` is presented in Google C
 [yt_link2]: https://www.youtube.com/watch?v=nBQuWa63188
 [colab_ex1_memory_optimize]: https://colab.research.google.com/drive/1XCpIYLMFEmGSO0XCOkSD7CcD9SFHSJPA?usp=sharing#scrollTo=DM_eCc3yXzXW
 [colab_ex1_auto_calculate_crop_values]: https://colab.research.google.com/drive/1XCpIYLMFEmGSO0XCOkSD7CcD9SFHSJPA?usp=sharing#scrollTo=Wkt1FkAkhCwQ
+[colab_ex1_different_resolutions]: !!!
