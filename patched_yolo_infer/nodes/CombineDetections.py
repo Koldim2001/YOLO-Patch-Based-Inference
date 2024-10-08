@@ -1,3 +1,4 @@
+from typing import Union, List
 import torch
 import numpy as np
 from .MakeCropsDetectThem import MakeCropsDetectThem
@@ -46,25 +47,60 @@ class CombineDetections:
 
     def __init__(
         self,
-        element_crops: MakeCropsDetectThem,
+        element_crops: Union[MakeCropsDetectThem, List[MakeCropsDetectThem]],
         nms_threshold=0.3,
         match_metric='IOS',
         intelligent_sorter=True,
         sorter_bins=5,
         class_agnostic_nms=True
     ) -> None:
-        self.class_names = element_crops.class_names_dict 
-        self.crops = element_crops.crops  # List to store the CropElement objects
-        if element_crops.resize_initial_size:
-            self.image = element_crops.crops[0].source_image
-        else:
-            self.image = element_crops.crops[0].source_image_resized
 
         self.nms_threshold = nms_threshold  # IOU or IOS treshold for NMS
         self.match_metric = match_metric 
         self.intelligent_sorter = intelligent_sorter # enable sorting by area and confidence parameter
         self.sorter_bins = sorter_bins
         self.class_agnostic_nms = class_agnostic_nms
+
+        # Check if element_crops is a list
+        if isinstance(element_crops, list):
+            # Ensure all elements in the list have the same source_image and other params
+            first_image = element_crops[0].crops[0].source_image
+            first_element_segment_status = element_crops[0].segment
+            first_element_memory_optimize_status = element_crops[0].memory_optimize
+            for element in element_crops:
+                if not np.array_equal(element.crops[0].source_image, first_image):
+                    raise ValueError(
+                        "The source images in element_crops differ, "
+                        "so combining results from these objects is not possible."
+                    )
+                if not element.resize_initial_size:
+                    raise ValueError(
+                        "When working with a list of element_crops, "
+                        "resize_initial_size should be True everywhere."
+                    )
+                if (
+                    first_element_segment_status != element.segment
+                    or first_element_memory_optimize_status != element.memory_optimize
+                ):
+                    raise ValueError(
+                        "The segment or memory_optimize attributes of element_crops differ, "
+                        "so processing cannot be performed."
+                    )
+            
+            self.class_names = element_crops[0].class_names_dict
+            self.crops = [crop for element in element_crops for crop in element.crops]
+            self.image = element_crops[0].crops[0].source_image
+            self.segment = element_crops[0].segment
+            self.memory_optimize = element_crops[0].memory_optimize
+        else:
+            self.class_names = element_crops.class_names_dict
+            self.crops = element_crops.crops  # List to store the CropElement objects
+            if element_crops.resize_initial_size:
+                self.image = element_crops.crops[0].source_image
+            else:
+                self.image = element_crops.crops[0].source_image_resized
+            self.segment = element_crops.segment
+            self.memory_optimize = element_crops.memory_optimize
 
         # Combinate detections of all patches
         (
@@ -108,13 +144,13 @@ class CombineDetections:
         self.filtered_classes_names = [self.detected_cls_names_list_full[i] for i in self.filtered_indices]
 
         # Masks filtering:
-        if element_crops.segment and not element_crops.memory_optimize:
+        if self.segment and not self.memory_optimize:
             self.filtered_masks = [self.detected_masks_list_full[i] for i in self.filtered_indices]
         else:
             self.filtered_masks = []
 
         # Polygons filtering:
-        if element_crops.segment and element_crops.memory_optimize:
+        if self.segment and self.memory_optimize:
             self.filtered_polygons = [self.detected_polygons_list_full[i] for i in self.filtered_indices]
         else:
             self.filtered_polygons = []
