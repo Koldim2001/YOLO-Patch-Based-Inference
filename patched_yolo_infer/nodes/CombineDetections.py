@@ -446,3 +446,36 @@ class CombineDetections:
                 )
             all_keeps.extend(keep_indexes)
         return all_keeps
+    
+    def __str__(self):
+        # List of useful attributes (non-empty ones)
+        useful_attributes = []
+        if self.filtered_confidences:
+            useful_attributes.append("filtered_confidences")
+        if self.filtered_boxes:
+            useful_attributes.append("filtered_boxes")
+        if self.filtered_classes_id:
+            useful_attributes.append("filtered_classes_id")
+        if self.filtered_classes_names:
+            useful_attributes.append("filtered_classes_names")
+        if self.filtered_masks:
+            useful_attributes.append("filtered_masks")
+        if self.filtered_polygons:
+            useful_attributes.append("filtered_polygons")
+
+        # If all attributes are empty
+        if not useful_attributes:
+            return "Useful attributes: nothing detected in the frame."
+
+        # Build the output string
+        output = "Useful attributes: " + ", ".join(useful_attributes) + "\n\n"
+        for attr in useful_attributes:
+            value = getattr(self, attr)
+            if attr == "filtered_masks":
+                output += f"{attr}: the list of binary masks with shape {value[0].shape} (length: {len(value)})\n"
+            elif len(value) > 10:
+                list_text = f"{value[:10]}"
+                output += f"{attr}: {list_text[:-1]}, ...] (length: {len(value)})\n"
+            else:
+                output += f"{attr}: {value} (length: {len(value)})\n"
+        return output
