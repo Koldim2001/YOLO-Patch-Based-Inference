@@ -261,8 +261,6 @@ def visualize_results_yolo_pose_inference(
 
     # Process each prediction
     for pred in predictions:
-        print(pred.boxes)
-        print(pred.keypoints)
 
         # Get the bounding boxes and convert them to a list of lists
         boxes = pred.boxes.xyxy.cpu().int().tolist()
