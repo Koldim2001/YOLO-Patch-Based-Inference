@@ -59,12 +59,12 @@ img = cv2.imread(img_path)
 
 element_crops = MakeCropsDetectThem(
     image=img,
-    model_path="yolov8m.pt",
+    model_path="yolo11m.pt",
     segment=False,
     shape_x=640,
     shape_y=640,
-    overlap_x=50,
-    overlap_y=50,
+    overlap_x=25,
+    overlap_y=25,
     conf=0.5,
     iou=0.7,
 )
@@ -135,7 +135,7 @@ Visualizes custom results of object detection or segmentation on an image.
 - **thickness** (*int*): The thickness of bounding box and text. Default is 4.
 - **font**: The font type for class labels. Default is cv2.FONT_HERSHEY_SIMPLEX.
 - **font_scale** (*float*): The scale factor for font size. Default is 1.5.
-- **delta_colors** (*int*): The random seed offset for color variation. Default is seed=0.
+- **delta_colors** (*int*): The random seed offset for color variation. Default is seed=3.
 - **dpi** (*int*): Final visualization size (plot is bigger when dpi is higher). Default is 150.
 - **random_object_colors** (*bool*): If true, colors for each object are selected randomly. Default is False.
 - **show_confidences** (*bool*): If true and show_class=True, confidences near class are visualized. Default is False.
@@ -220,7 +220,7 @@ img = cv2.imread(img_path)
 
 # Calculate the optimal crop size and overlap for an image
 shape_x, shape_y, overlap_x, overlap_y = auto_calculate_crop_values(
-    image=img, mode="network_based", model=YOLO("yolov8m.pt")
+    image=img, mode="network_based", model=YOLO("yolo11m.pt")
 )
 ```
 

@@ -83,12 +83,12 @@ img = cv2.imread(img_path)
 
 element_crops = MakeCropsDetectThem(
     image=img,
-    model_path="yolov8m.pt",
+    model_path="yolo11m.pt",
     segment=False,
     shape_x=640,
     shape_y=640,
-    overlap_x=50,
-    overlap_y=50,
+    overlap_x=25,
+    overlap_y=25,
     conf=0.5,
     iou=0.7,
 )
@@ -264,7 +264,7 @@ Possible arguments of the ```auto_calculate_crop_values``` function:
 |-----------------------|------------------------|--------------|----------------------------------------------------------------------------------------------------------------|
 | image                 | np.ndarray             |              | 	The input image in BGR format.                                                                                                            |
 | mode                 | str      | "network_based"   | The type of analysis to perform. Can be "resolution_based" for Resolution-Based Analysis or "network_based" for Neural Network-Based Analysis.|
-| model                 | ultralytics model      | YOLO("yolov8m.pt")   | Pre-initialized model object for "network_based" mode. If not provided, the default YOLOv8m model will be used.|
+| model                 | ultralytics model      | YOLO("yolo11m.pt")   | Pre-initialized model object for "network_based" mode. If not provided, the default YOLO11m model will be used.|
 | classes_list          | list                   | None          | A list of class indices to consider for object detection in "network_based" mode. If None, all classes will be considered. |
 | conf                  | float                  | 0.25          | The confidence threshold for detection in "network_based" mode. |
 
@@ -280,7 +280,7 @@ img = cv2.imread(img_path)
 
 # Calculate the optimal crop size and overlap for an image
 shape_x, shape_y, overlap_x, overlap_y = auto_calculate_crop_values(
-    image=img, mode="network_based", model=YOLO("yolov8m.pt")
+    image=img, mode="network_based", model=YOLO("yolo11m.pt")
 )
 ```
 

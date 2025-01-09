@@ -179,18 +179,18 @@ def visualize_results_usual_yolo_inference(
 
 def visualize_results_yolo_pose_inference(
     img,
-    model,
+    model=YOLO("yolo11m-pose.pt"),
     imgsz=640,
     conf=0.25,
     iou=0.7,
-    show_boxes=True,
-    show_class=True,
-    color_class_background=(0, 0, 255),
-    color_class_text=(255, 255, 255),
     thickness=4,
     point_radius=4,
     connection_schema=None,
     min_landmark_visibility=0.25,
+    show_boxes=True,
+    show_class=True,
+    color_class_background=(0, 0, 255),
+    color_class_text=(255, 255, 255),
     font=cv2.FONT_HERSHEY_SIMPLEX,
     font_scale=1.5,
     delta_colors=3,
@@ -208,20 +208,20 @@ def visualize_results_yolo_pose_inference(
 
     Args:
         img (numpy.ndarray): The input image in BGR format.
-        model: The object detection or segmentation model (yolov8).
+        model: The yolo-pose model. Default is "yolo11m-pose.pt".
         imgsz (int): The input image size for the model. Default is 640.
         conf (float): The confidence threshold for detection. Default is 0.25.
         iou (float): The intersection over union threshold for detection. Default is 0.7.
-        show_boxes (bool): Whether to show bounding boxes. Default is True.
-        show_class (bool): Whether to show class labels. Default is True.
-        color_class_background (tuple / list of tuple): The background BGR color for class labels. Default is (0, 0, 255) (red).
-        color_class_text (tuple): The text BGR color for class labels. Default is (255, 255, 255) (white).
-        thickness (int): The thickness of bounding box and text. Default is 4.
+        thickness (int): The thickness of bounding box, text and skeleton connections. Default is 4.
         point_radius (int): The radius of the landmark points to be drawn on the image.   
         connection_schema (list):  A list of tuples defining how landmarks should be connected to form a skeleton. 
             Each tuple contains two indices representing the landmarks to be connected.
             If None or empty, only landmarks will be drawn without any connections.
         min_landmark_visibility (float): The minimum confidence threshold for a landmark's visibility to be drawn. 
+        show_boxes (bool): Whether to show bounding boxes. Default is True.
+        show_class (bool): Whether to show class labels. Default is True.
+        color_class_background (tuple / list of tuple): The background BGR color for class labels. Default is (0, 0, 255) (red).
+        color_class_text (tuple): The text BGR color for class labels. Default is (255, 255, 255) (white).
         font: The font type for class labels. Default is cv2.FONT_HERSHEY_SIMPLEX.
         font_scale (float): The scale factor for font size. Default is 1.5.
         delta_colors (int): The random seed offset for color variation. Default is 3.
@@ -680,7 +680,7 @@ def auto_calculate_crop_values(image, mode="network_based", model=None, classes_
     image (numpy.ndarray): The input BGR image.
     mode (str): The type of analysis to perform. Can be "resolution_based" or "network_based". 
         Default is "network_analysis".
-    model (YOLO): The YOLO model to use for object detection. If None, a default model yolov8m
+    model (YOLO): The YOLO model to use for object detection. If None, a default model yolo11m
         will be loaded. Default is None.
     classes_list (list): A list of class indices to consider for object detection. If None, all classes 
         will be considered. Default is None.
@@ -700,7 +700,7 @@ def auto_calculate_crop_values(image, mode="network_based", model=None, classes_
     else:
         # If no model is provided, load a default YOLO model
         if model is None:
-            model = YOLO("yolov8m.pt")
+            model = YOLO("yolo11m.pt")
 
         # Perform object detection on the image
         result = model.predict(image, conf=conf, iou=0.75, classes=classes_list, verbose=False)
