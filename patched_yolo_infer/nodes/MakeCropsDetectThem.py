@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from ultralytics import YOLO
+from collections import Counter
 
 from ..elements.CropElement import CropElement
 
@@ -303,3 +304,26 @@ class MakeCropsDetectThem:
             f"{len(self.crops)} patches of size {self.crops[0].crop.shape} "
             f"were created from an image sized {self.image.shape}"
         )
+
+    def patches_info(self):
+        print(self)
+        output = "\nDetailed information about the detections for each patch:"
+        for i, patch in enumerate(self.crops):
+            if len(patch.detected_cls) > 0:
+                detected_cls_names_list = [
+                    self.class_names_dict[value] for value in patch.detected_cls
+                ] # make str list
+
+                # Count the occurrences of each class in the current patch
+                class_counts = Counter(detected_cls_names_list)
+                
+                # Format the class counts into a readable string
+                class_info = ", ".join([f"{count} {cls}" for cls, count in class_counts.items()])
+                
+                # Append the formatted string to the patch_info list
+                output += f"\nOn patch № {i}, {class_info} were detected"
+            else:
+                # Append the formatted string to the patch_info list
+                output += f"\nOn patch № {i}, nothing was detected"
+        print(output)
+
