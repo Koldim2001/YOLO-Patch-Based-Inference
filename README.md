@@ -111,10 +111,10 @@ Class implementing cropping and passing crops through a neural network for detec
 | **Argument**          | **Type**               | **Default**  | **Description**                                                                                                |
 |-----------------------|------------------------|--------------|----------------------------------------------------------------------------------------------------------------|
 | image                 | np.ndarray             |              | 	The input image in BGR format.                                                                                               |
-| model_path            | str                    | "yolov8m.pt" | Path to the YOLO model.                                                                                        |
+| model_path            | str                    | "yolo11m.pt" | Path to the YOLO model.                                                                                        |
 | model                 | ultralytics model      | None         | Pre-initialized model object. If provided, the model will be used directly instead of loading from model_path. |
 | imgsz                 | int                    | 640          | Size of the input image for inference YOLO.                                                                    |
-| conf                  | float                  | 0.5          | Confidence threshold for detections YOLO.                                                                      |
+| conf                  | float                  | 0.25          | Confidence threshold for detections YOLO.                                                                      |
 | iou                   | float                  | 0.7          | IoU threshold for non-maximum suppression YOLOv8 of single  crop.                                              |
 | classes_list          | List[int] or None      | None         | List of classes to filter detections. If None, all classes are considered.                                     |
 | segment               | bool                   | False        | Whether to perform segmentation (if the model supports it).                                                    |
@@ -167,7 +167,7 @@ Possible arguments of the ```visualize_results``` function:
 | thickness               | int             | 4             | The thickness of bounding box and text.                                                       |
 | font                    | cv2.font        |cv2.FONT_HERSHEY_SIMPLEX | The font type for class labels.                                                     |
 | font_scale              | float           | 1.5           | The scale factor for font size.                                                               |
-| delta_colors            | int             | seed=0        | The random seed offset for color variation.                                                   |
+| delta_colors            | int             | seed=3        | The random seed offset for color variation.                                                   |
 | dpi                     | int             | 150           | Final visualization size (plot is bigger when dpi is higher).                                 |
 | random_object_colors    | bool            | False         | If true, colors for each object are selected randomly.                                        |
 | show_confidences        | bool            | False         | If true and show_class=True, confidences near class are visualized.                           |

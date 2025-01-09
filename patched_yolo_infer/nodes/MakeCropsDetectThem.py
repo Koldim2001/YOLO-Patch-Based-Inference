@@ -61,9 +61,9 @@ class MakeCropsDetectThem:
     def __init__(
         self,
         image: np.ndarray,
-        model_path="yolov8m.pt",
+        model_path="yolo11m.pt",
         imgsz=640,
-        conf=0.5,
+        conf=0.25,
         iou=0.7,
         classes_list=None,
         segment=False,
