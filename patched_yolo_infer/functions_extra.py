@@ -184,13 +184,14 @@ def visualize_results_yolo_pose_inference(
     conf=0.25,
     iou=0.7,
     thickness=4,
-    point_radius=4,
+    point_radius=5,
     connection_schema=None,
-    min_landmark_visibility=0.25,
+    min_landmarks_visibility=0.25,
     show_boxes=True,
-    show_class=True,
+    show_class=False,
     color_class_background=(0, 0, 255),
     color_class_text=(255, 255, 255),
+    point_color=None,
     font=cv2.FONT_HERSHEY_SIMPLEX,
     font_scale=1.5,
     delta_colors=3,
@@ -218,24 +219,26 @@ def visualize_results_yolo_pose_inference(
         connection_schema (list):  A list of tuples defining how landmarks should be connected to form a skeleton. 
             Each tuple contains two indices representing the landmarks to be connected.
             If None or empty, only landmarks will be drawn without any connections.
-        min_landmark_visibility (float): The minimum confidence threshold for a landmark's visibility to be drawn. 
+        min_landmarks_visibility (float): The minimum confidence threshold for a landmark's visibility to be drawn. 
         show_boxes (bool): Whether to show bounding boxes. Default is True.
-        show_class (bool): Whether to show class labels. Default is True.
+        show_class (bool): Whether to show class labels. Default is False.
         color_class_background (tuple / list of tuple): The background BGR color for class labels. Default is (0, 0, 255) (red).
         color_class_text (tuple): The text BGR color for class labels. Default is (255, 255, 255) (white).
+        delta_colors (int): The random seed offset for color variation. Default is 3.
+        list_of_class_colors (list / None): A list of tuples representing the colors for each class in BGR format.  
+            If provided, these colors will be used for displaying the classes instead of random colors. 
+            The number of tuples in the list must match the number of possible classes in the network.
+        random_object_colors (bool): If True, colors for each object are selected randomly.
+        point_color (tuple / None): If None, then the point color is chosen to be the same as the box and skeleton;
+            otherwise, the one you specify.
         font: The font type for class labels. Default is cv2.FONT_HERSHEY_SIMPLEX.
         font_scale (float): The scale factor for font size. Default is 1.5.
-        delta_colors (int): The random seed offset for color variation. Default is 3.
         dpi (int): Final visualization size (plot is bigger when dpi is higher).
-        random_object_colors (bool): If True, colors for each object are selected randomly.
         show_confidences (bool): If True and show_class=True, confidences near class are visualized.
         axis_off (bool): If True, axis is turned off in the final visualization.
         show_classes_list (list): If empty, visualize all classes. Otherwise, visualize only classes in the list.
         show_points_list (list): If empty, visualize all points. Otherwise, visualize only points in the list.
-        inference_extra_args (dict/None): Dictionary with extra ultralytics inference parameters.
-        list_of_class_colors (list/None): A list of tuples representing the colors for each class in BGR format.  
-                    If provided, these colors will be used for displaying the classes instead of random colors. 
-                    The number of tuples in the list must match the number of possible classes in the network.
+        inference_extra_args (dict / None): Dictionary with extra ultralytics inference parameters.
         return_image_array (bool): If True, the function returns the image bgr array instead of displaying it. 
                                    Default is False.
 
@@ -265,6 +268,10 @@ def visualize_results_yolo_pose_inference(
 
         # Get the mask confidence scores
         confidences = pred.boxes.conf.cpu().numpy()
+
+        landmarks_visibility = pred.keypoints.conf.cpu().tolist()
+
+        landmarks_xy = pred.keypoints.xy.cpu().int().tolist()
 
         num_objects = len(classes)
 
@@ -320,6 +327,34 @@ def visualize_results_yolo_pose_inference(
                     color_class_text,
                     thickness=thickness,
                 )
+
+            if connection_schema is not None:
+                for pair in connection_schema:
+                    start, end = pair
+                    if (
+                        landmarks_xy[i][start][0] > 0
+                        and landmarks_xy[i][start][1] > 0
+                        and landmarks_xy[i][end][0] > 0
+                        and landmarks_xy[i][end][1] > 0
+                        and landmarks_visibility[i][start] >= min_landmarks_visibility
+                        and landmarks_visibility[i][end] >= min_landmarks_visibility
+                    ):
+                        x1, y1 = landmarks_xy[i][start][0], landmarks_xy[i][start][1]
+                        x2, y2 = landmarks_xy[i][end][0], landmarks_xy[i][end][1]
+                        cv2.line(labeled_image, (x1, y1), (x2, y2), color, thickness)
+
+            if point_radius > 0:
+                num_point = -1
+                for point, landmark_visibility in zip(landmarks_xy[i], landmarks_visibility[i]):
+                    num_point += 1
+                    if show_points_list and num_point not in show_points_list:
+                        continue
+                    x, y = point
+                    if x > 0 and y > 0 and landmark_visibility >= min_landmarks_visibility: 
+                        if point_color is None:
+                            cv2.circle(labeled_image, (x, y), point_radius, color, -1)
+                        else:
+                            cv2.circle(labeled_image, (x, y), point_radius, point_color, -1)
 
     if return_image_array:
         return labeled_image
