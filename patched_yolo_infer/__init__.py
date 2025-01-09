@@ -1,5 +1,6 @@
 from .functions_extra import (
     visualize_results_usual_yolo_inference,
+    visualize_results_yolo_pose_inference,
     get_crops,
     visualize_results,
     create_masks_from_polygons,

@@ -199,6 +199,7 @@ def visualize_results_yolo_pose_inference(
     show_confidences=False,
     axis_off=True,
     show_classes_list=[],
+    show_points_list=[],
     list_of_class_colors=None,
     return_image_array=False,
     inference_extra_args=None,
@@ -230,6 +231,7 @@ def visualize_results_yolo_pose_inference(
         show_confidences (bool): If True and show_class=True, confidences near class are visualized.
         axis_off (bool): If True, axis is turned off in the final visualization.
         show_classes_list (list): If empty, visualize all classes. Otherwise, visualize only classes in the list.
+        show_points_list (list): If empty, visualize all points. Otherwise, visualize only points in the list.
         inference_extra_args (dict/None): Dictionary with extra ultralytics inference parameters.
         list_of_class_colors (list/None): A list of tuples representing the colors for each class in BGR format.  
                     If provided, these colors will be used for displaying the classes instead of random colors. 
