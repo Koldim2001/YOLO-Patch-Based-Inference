@@ -261,6 +261,8 @@ def visualize_results_yolo_pose_inference(
 
     # Process each prediction
     for pred in predictions:
+        print(pred.boxes)
+        print(pred.keypoints)
 
         # Get the bounding boxes and convert them to a list of lists
         boxes = pred.boxes.xyxy.cpu().int().tolist()
@@ -268,14 +270,14 @@ def visualize_results_yolo_pose_inference(
         # Get the classes and convert them to a list
         classes = pred.boxes.cls.cpu().int().tolist()
 
-        # Get the mask confidence scores
+        # Get the confidence scores
         confidences = pred.boxes.conf.cpu().numpy()
 
-        landmarks_visibility = pred.keypoints.conf.cpu().tolist()
-
-        landmarks_xy = pred.keypoints.xy.cpu().int().tolist()
-
         num_objects = len(classes)
+
+        if num_objects > 0:
+            landmarks_visibility = pred.keypoints.conf.cpu().tolist()
+            landmarks_xy = pred.keypoints.xy.cpu().int().tolist()
 
         # Visualization
         for i in range(num_objects):
