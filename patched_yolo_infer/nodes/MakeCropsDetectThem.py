@@ -296,3 +296,10 @@ class MakeCropsDetectThem:
                 else:
                     # Get the masks
                     crop.detected_masks = pred.masks.data.cpu().numpy()
+
+    def __str__(self):
+        # Print info about patches amount
+        return (
+            f"{len(self.crops)} patches of size {self.crops[0].crop.shape} "
+            f"were created from an image sized {self.image.shape}"
+        )

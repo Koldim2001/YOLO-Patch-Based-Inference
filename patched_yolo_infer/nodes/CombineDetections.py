@@ -448,7 +448,7 @@ class CombineDetections:
         return all_keeps
     
     def __str__(self):
-        # List of useful attributes (non-empty ones)
+        # Print the list of useful attributes (non-empty ones)
         useful_attributes = []
         if self.filtered_confidences:
             useful_attributes.append("filtered_confidences")
@@ -465,7 +465,7 @@ class CombineDetections:
 
         # If all attributes are empty
         if not useful_attributes:
-            return "Useful attributes: nothing detected in the frame."
+            return "Useful attributes: nothing detected in the frame"
 
         # Build the output string
         output = "Useful attributes: " + ", ".join(useful_attributes) + "\n\n"
