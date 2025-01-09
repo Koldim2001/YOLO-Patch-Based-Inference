@@ -27,7 +27,7 @@ __Check this Colab examples:__
                          
 Patch-Based-Inference Example - [**Open in Colab**](https://colab.research.google.com/drive/1XCpIYLMFEmGSO0XCOkSD7CcD9SFHSJPA?usp=sharing)
 
-Example of using various functions for visualizing basic YOLOv8/v9 inference results - [**Open in Colab**](https://colab.research.google.com/drive/1eM4o1e0AUQrS1mLDpcgK9HKInWEvnaMn?usp=sharing)
+Example of using various functions for visualizing basic YOLO inference results - [**Open in Colab**](https://colab.research.google.com/drive/1eM4o1e0AUQrS1mLDpcgK9HKInWEvnaMn?usp=sharing)
 
 
 ## Usage
@@ -89,9 +89,9 @@ Class implementing cropping and passing crops through a neural network for detec
 - **model** (*ultralytics model*) Pre-initialized model object. If provided, the model will be used directly instead of loading from model_path.
 - **imgsz** (*int*): Size of the input image for inference YOLO.
 - **conf** (*float*): Confidence threshold for detections YOLO.
-- **iou** (*float*): IoU threshold for non-maximum suppression YOLOv8 of single crop.
+- **iou** (*float*): IoU threshold for non-maximum suppression YOLO of single crop.
 - **classes_list** (*List[int] or None*): List of classes to filter detections. If None, all classes are considered. Defaults to None.
-- **segment** (*bool*): Whether to perform segmentation (YOLOv8-seg).
+- **segment** (*bool*): Whether to perform segmentation (YOLO-seg).
 - **shape_x** (*int*): Size of the crop in the x-coordinate.
 - **shape_y** (*int*): Size of the crop in the y-coordinate.
 - **overlap_x** (*float*): Percentage of overlap along the x-axis.

@@ -115,7 +115,7 @@ Class implementing cropping and passing crops through a neural network for detec
 | model                 | ultralytics model      | None         | Pre-initialized model object. If provided, the model will be used directly instead of loading from model_path. |
 | imgsz                 | int                    | 640          | Size of the input image for inference YOLO.                                                                    |
 | conf                  | float                  | 0.25          | Confidence threshold for detections YOLO.                                                                      |
-| iou                   | float                  | 0.7          | IoU threshold for non-maximum suppression YOLOv8 of single  crop.                                              |
+| iou                   | float                  | 0.7          | IoU threshold for non-maximum suppression YOLO of single  crop.                                              |
 | classes_list          | List[int] or None      | None         | List of classes to filter detections. If None, all classes are considered.                                     |
 | segment               | bool                   | False        | Whether to perform segmentation (if the model supports it).                                                    |
 | shape_x               | int                    | 700          | Size of the crop in the x-coordinate.                                                                          |
