@@ -179,7 +179,7 @@ def visualize_results_usual_yolo_inference(
 
 def visualize_results_yolo_pose_inference(
     img,
-    model=YOLO("yolo11m-pose.pt"),
+    model=None,
     imgsz=640,
     conf=0.25,
     iou=0.7,
@@ -210,12 +210,12 @@ def visualize_results_yolo_pose_inference(
 
     Args:
         img (numpy.ndarray): The input image in BGR format.
-        model: The yolo-pose model. Default is "yolo11m-pose.pt".
+        model: The YOLO-pose model. Default is "yolo11m-pose.pt".
         imgsz (int): The input image size for the model. Default is 640.
         conf (float): The confidence threshold for detection. Default is 0.25.
         iou (float): The intersection over union threshold for detection. Default is 0.7.
         thickness (int): The thickness of bounding box, text and skeleton connections. Default is 4.
-        point_radius (int): The radius of the landmark points to be drawn on the image.   
+        point_radius (int): The radius of the landmark points to be drawn on the image. Default is 5.
         connection_schema (list):  A list of tuples defining how landmarks should be connected to form a skeleton. 
             Each tuple contains two indices representing the landmarks to be connected.
             If None or empty, only landmarks will be drawn without any connections.
@@ -245,6 +245,8 @@ def visualize_results_yolo_pose_inference(
     Returns:
         None/np.array
     """
+    if model is None:
+        model = YOLO("yolo11m-pose.pt")
 
     # Perform inference
     extra_args = {} if inference_extra_args is None else inference_extra_args

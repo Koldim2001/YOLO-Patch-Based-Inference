@@ -82,7 +82,8 @@ classes_names=result.filtered_classes_names
 #### Explanation of possible input arguments:
 
 **MakeCropsDetectThem**
-Class implementing cropping and passing crops through a neural network for detection/segmentation.\
+Class implementing cropping and passing crops through a neural network for detection/segmentation.
+
 **Args:**
 - **image** (*np.ndarray*): Input image BGR.
 - **model_path** (*str*): Path to the YOLO model.
@@ -103,7 +104,8 @@ Class implementing cropping and passing crops through a neural network for detec
 - **batch_inference** (*bool*): Batch inference of image crops through a neural network instead of sequential passes of crops (ps: faster inference, higher gpu memory use)
 
 **CombineDetections**
-Class implementing combining masks/boxes from multiple crops + NMS (Non-Maximum Suppression).\
+Class implementing combining masks/boxes from multiple crops + NMS (Non-Maximum Suppression).
+
 **Args:**
 - **element_crops** (*MakeCropsDetectThem*): Object containing crop information. This can be either a single MakeCropsDetectThem object or a list of objects. 
 - **nms_threshold** (*float*): IoU/IoS threshold for non-maximum suppression.
