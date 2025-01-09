@@ -1,4 +1,5 @@
 from collections import Counter
+from tqdm import tqdm
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -33,6 +34,7 @@ class MakeCropsDetectThem:
         memory_optimize (bool): Memory optimization option for segmentation (less accurate results)
         batch_inference (bool): Batch inference of image crops through a neural network instead of 
                     sequential passes of crops (ps: Faster inference, higher memory use)
+        progress_callback (function): Optional callback function, (task: str, current: int, total: int)
         inference_extra_args (dict): Dictionary with extra ultralytics inference parameters
 
     Attributes:
@@ -56,6 +58,7 @@ class MakeCropsDetectThem:
         memory_optimize (bool): Memory optimization option for segmentation (less accurate results)
         batch_inference (bool): Batch inference of image crops through a neural network instead of 
                                     sequential passes of crops (ps: Faster inference, higher memory use)
+        progress_callback (function): Optional callback function, (task: str, current: int, total: int)
         inference_extra_args (dict): Dictionary with extra ultralytics inference parameters
     """
     def __init__(
@@ -77,6 +80,7 @@ class MakeCropsDetectThem:
         memory_optimize=True,
         inference_extra_args=None,
         batch_inference=False,
+        progress_callback=None,
     ) -> None:
         if model is None:
             self.model = YOLO(model_path)  # Load the model from the specified path
@@ -99,6 +103,7 @@ class MakeCropsDetectThem:
         self.class_names_dict = self.model.names # dict with human-readable class names
         self.inference_extra_args = inference_extra_args # dict with extra ultralytics inference parameters
         self.batch_inference = batch_inference # batch inference of image crops through a neural network
+        self.progress_callback = progress_callback # callback function to report progress of the inference
 
         self.crops = self.get_crops_xy(
             self.image,
@@ -158,6 +163,7 @@ class MakeCropsDetectThem:
             plt.figure(figsize=[x_steps*0.9, y_steps*0.9])
 
         count = 0
+        total_steps = y_steps * x_steps  # Total number of crops
         for i in range(y_steps):
             for j in range(x_steps):
                 x_start = int(shape_x * j * cross_koef_x)
@@ -179,6 +185,10 @@ class MakeCropsDetectThem:
                     plt.imshow(cv2.cvtColor(im_temp.copy(), cv2.COLOR_BGR2RGB))
                     plt.axis('off')
                 count += 1
+                
+                # Call the progress callback function if provided
+                if self.progress_callback is not None:
+                    self.progress_callback("Getting crops", count, total_steps)
 
                 data_all_crops.append(CropElement(
                                         source_image=image_innitial,
@@ -210,7 +220,8 @@ class MakeCropsDetectThem:
         Returns:
             None
         """
-        for crop in self.crops:
+        total_crops = len(self.crops)  # Total number of crops
+        for index, crop in enumerate(self.crops):
             crop.calculate_inference(
                 self.model,
                 imgsz=self.imgsz,
@@ -224,6 +235,11 @@ class MakeCropsDetectThem:
             crop.calculate_real_values()
             if self.resize_initial_size:
                 crop.resize_results()
+                
+            # Call the progress callback function if provided
+            if self.progress_callback is not None:
+                self.progress_callback("Detecting objects", (index + 1), total_crops)
+                
 
     def _detect_objects_batch(self):
         """
