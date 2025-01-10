@@ -112,7 +112,7 @@ Class implementing cropping and passing crops through a neural network for detec
 |-----------------------|------------------------|--------------|----------------------------------------------------------------------------------------------------------------|
 | image                 | np.ndarray             |              | 	The input image in BGR format.                                                                                               |
 | model_path            | str                    | "yolo11m.pt" | Path to the YOLO model.                                                                                        |
-| model                 | ultralytics model      | None         | Pre-initialized model object. If provided, the model will be used directly instead of loading from model_path. |
+| model                 | Ultralytics model      | None         | Pre-initialized model object. If provided, the model will be used directly instead of loading from model_path. |
 | imgsz                 | int                    | 640          | Size of the input image for inference YOLO.                                                                    |
 | conf                  | float                  | 0.25          | Confidence threshold for detections YOLO.                                                                      |
 | iou                   | float                  | 0.7          | IoU threshold for non-maximum suppression YOLO of single  crop.                                              |
@@ -127,6 +127,8 @@ Class implementing cropping and passing crops through a neural network for detec
 | memory_optimize       | bool                   | True         | Memory optimization option for segmentation (less accurate results when enabled).                              |
 | inference_extra_args  | dict                   | None         | Dictionary with extra ultralytics [inference parameters](https://docs.ultralytics.com/modes/predict/#inference-arguments) (possible keys: half, device, max_det, augment, agnostic_nms and retina_masks) |
 | batch_inference       | bool                   | False        | Batch inference of image crops through a neural network instead of sequential passes of crops (ps: faster inference, higher gpu memory use).                           |
+| show_processing_status       | bool                   | False        | Whether to show the processing status using tqdm.                          |
+| progress_callback       | Callable                   | None        | Optional custom callback function, (task: str, current: int, total: int).                           |
 
 
 **CombineDetections**
