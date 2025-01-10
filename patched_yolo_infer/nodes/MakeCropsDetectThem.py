@@ -77,7 +77,7 @@ class MakeCropsDetectThem:
         overlap_x=25,
         overlap_y=25,
         show_crops=False,
-        show_processing_status=True,
+        show_processing_status=False,
         resize_initial_size=True,
         model=None,
         memory_optimize=True,
@@ -91,7 +91,7 @@ class MakeCropsDetectThem:
         self._progress_bars = {}
         
         # Set up the progress callback based on parameters
-        if progress_callback is not None:
+        if progress_callback is not None and show_processing_status:
             self.progress_callback = progress_callback
         elif show_processing_status:
             self.progress_callback = self._tqdm_callback
@@ -293,6 +293,11 @@ class MakeCropsDetectThem:
         """
         crops, batch = self.crops
         self.crops = crops
+
+        # Call the progress callback function if provided
+        if self.progress_callback is not None:
+            self.progress_callback("Detecting objects in batch", 0, 1)
+
         self._calculate_batch_inference(
             batch,
             self.crops,
@@ -309,6 +314,10 @@ class MakeCropsDetectThem:
             crop.calculate_real_values()
             if self.resize_initial_size:
                 crop.resize_results()
+
+        # Call the progress callback function if provided
+        if self.progress_callback is not None:
+            self.progress_callback("Detecting objects in batch", 1, 1)
 
     def _calculate_batch_inference(
         self,
