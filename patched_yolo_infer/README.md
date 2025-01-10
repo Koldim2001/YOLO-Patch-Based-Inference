@@ -100,8 +100,11 @@ Class implementing cropping and passing crops through a neural network for detec
 - **show_crops** (*bool*): Whether to visualize the cropping.
 - **resize_initial_size** (*bool*): Whether to resize the results to the original image size (ps: slow operation).
 - **memory_optimize** (*bool*): Memory optimization option for segmentation (less accurate results when enabled).
-- **inference_extra_args** (*dict*): Dictionary with extra ultralytics [inference parameters](https://docs.ultralytics.com/modes/predict/#inference-arguments) (possible keys: half, device, max_det, augment, agnostic_nms and retina_masks)
-- **batch_inference** (*bool*): Batch inference of image crops through a neural network instead of sequential passes of crops (ps: faster inference, higher gpu memory use)
+- **inference_extra_args** (*dict*): Dictionary with extra ultralytics [inference parameters](https://docs.ultralytics.com/modes/predict/#inference-arguments) (possible keys: half, device, max_det, augment, agnostic_nms and retina_masks).
+- **batch_inference** (*bool*): Batch inference of image crops through a neural network instead of sequential passes of crops (ps: faster inference, higher gpu memory use).
+- **show_processing_status** (*bool*): Whether to show the processing status using tqdm. (Default is False)
+- **progress_callback** (*function*): Optional custom callback function, (task: str, current: int, total: int).
+
 
 **CombineDetections**
 Class implementing combining masks/boxes from multiple crops + NMS (Non-Maximum Suppression).

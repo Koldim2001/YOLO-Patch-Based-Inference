@@ -128,7 +128,7 @@ Class implementing cropping and passing crops through a neural network for detec
 | inference_extra_args  | dict                   | None         | Dictionary with extra ultralytics [inference parameters](https://docs.ultralytics.com/modes/predict/#inference-arguments) (possible keys: half, device, max_det, augment, agnostic_nms and retina_masks) |
 | batch_inference       | bool                   | False        | Batch inference of image crops through a neural network instead of sequential passes of crops (ps: faster inference, higher gpu memory use).                           |
 | show_processing_status       | bool                   | False        | Whether to show the processing status using tqdm.                          |
-| progress_callback       | Callable                   | None        | Optional custom callback function, (task: str, current: int, total: int).                           |
+| progress_callback       | function                   | None        | Optional custom callback function, (task: str, current: int, total: int).                           |
 
 
 **CombineDetections**
