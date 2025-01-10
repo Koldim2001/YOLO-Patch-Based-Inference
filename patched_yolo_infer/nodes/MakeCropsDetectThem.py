@@ -1,4 +1,5 @@
 from collections import Counter
+from tqdm import tqdm
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -26,6 +27,7 @@ class MakeCropsDetectThem:
         overlap_x (int): Percentage of overlap along the x-axis.
         overlap_y (int): Percentage of overlap along the y-axis.
         show_crops (bool): Whether to visualize the cropping.
+        show_processing_status (bool): Whether to show the processing status using tqdm.
         resize_initial_size (bool): Whether to resize the results to the original 
                                     image size (ps: slow operation).
         model: Pre-initialized model object. If provided, the model will be used directly 
@@ -33,6 +35,7 @@ class MakeCropsDetectThem:
         memory_optimize (bool): Memory optimization option for segmentation (less accurate results)
         batch_inference (bool): Batch inference of image crops through a neural network instead of 
                     sequential passes of crops (ps: Faster inference, higher memory use)
+        progress_callback (function): Optional custom callback function, (task: str, current: int, total: int)
         inference_extra_args (dict): Dictionary with extra ultralytics inference parameters
 
     Attributes:
@@ -50,12 +53,14 @@ class MakeCropsDetectThem:
         overlap_y (int): Percentage of overlap along the y-axis.
         crops (list): List to store the CropElement objects.
         show_crops (bool): Whether to visualize the cropping.
+        show_processing_status (bool): Whether to show the processing status using tqdm.
         resize_initial_size (bool): Whether to resize the results to the original  
                                     image size (ps: slow operation).
         class_names_dict (dict): Dictionary containing class names of the YOLO model.
         memory_optimize (bool): Memory optimization option for segmentation (less accurate results)
         batch_inference (bool): Batch inference of image crops through a neural network instead of 
                                     sequential passes of crops (ps: Faster inference, higher memory use)
+        progress_callback (function): Optional custom callback function, (task: str, current: int, total: int)
         inference_extra_args (dict): Dictionary with extra ultralytics inference parameters
     """
     def __init__(
@@ -72,12 +77,27 @@ class MakeCropsDetectThem:
         overlap_x=25,
         overlap_y=25,
         show_crops=False,
+        show_processing_status=True,
         resize_initial_size=True,
         model=None,
         memory_optimize=True,
         inference_extra_args=None,
         batch_inference=False,
+        progress_callback=None,
     ) -> None:
+        
+        # Add show_process_status parameter and initialize progress bars dict
+        self.show_process_status = show_processing_status
+        self._progress_bars = {}
+        
+        # Set up the progress callback based on parameters
+        if progress_callback is not None:
+            self.progress_callback = progress_callback
+        elif show_processing_status:
+            self.progress_callback = self._tqdm_callback
+        else:
+            self.progress_callback = None
+            
         if model is None:
             self.model = YOLO(model_path)  # Load the model from the specified path
         else:
@@ -112,6 +132,31 @@ class MakeCropsDetectThem:
             self._detect_objects_batch() 
         else:
             self._detect_objects()
+            
+    def _tqdm_callback(self, task, current, total):
+        """Internal callback function that uses tqdm for progress tracking
+        
+        Args:
+            task (str): The name of the task being tracked
+            current (int): The current progress value
+            total (int): The total number of steps in the task
+            
+        """
+        if task not in self._progress_bars:
+            self._progress_bars[task] = tqdm(
+                total=total,
+                desc=task,
+                unit='items'
+            )
+        
+        # Update progress
+        self._progress_bars[task].n = current
+        self._progress_bars[task].refresh()
+        
+        # Close and cleanup if task is complete
+        if current >= total:
+            self._progress_bars[task].close()
+            del self._progress_bars[task]
 
     def get_crops_xy(
         self,
@@ -158,6 +203,7 @@ class MakeCropsDetectThem:
             plt.figure(figsize=[x_steps*0.9, y_steps*0.9])
 
         count = 0
+        total_steps = y_steps * x_steps  # Total number of crops
         for i in range(y_steps):
             for j in range(x_steps):
                 x_start = int(shape_x * j * cross_koef_x)
@@ -179,6 +225,10 @@ class MakeCropsDetectThem:
                     plt.imshow(cv2.cvtColor(im_temp.copy(), cv2.COLOR_BGR2RGB))
                     plt.axis('off')
                 count += 1
+                
+                # Call the progress callback function if provided
+                if self.progress_callback is not None:
+                    self.progress_callback("Getting crops", count, total_steps)
 
                 data_all_crops.append(CropElement(
                                         source_image=image_innitial,
@@ -210,7 +260,8 @@ class MakeCropsDetectThem:
         Returns:
             None
         """
-        for crop in self.crops:
+        total_crops = len(self.crops)  # Total number of crops
+        for index, crop in enumerate(self.crops):
             crop.calculate_inference(
                 self.model,
                 imgsz=self.imgsz,
@@ -224,6 +275,11 @@ class MakeCropsDetectThem:
             crop.calculate_real_values()
             if self.resize_initial_size:
                 crop.resize_results()
+                
+            # Call the progress callback function if provided
+            if self.progress_callback is not None:
+                self.progress_callback("Detecting objects", (index + 1), total_crops)
+                
 
     def _detect_objects_batch(self):
         """
@@ -326,4 +382,10 @@ class MakeCropsDetectThem:
                 # Append the formatted string to the patch_info list
                 output += f"\nOn patch № {i}, nothing was detected"
         print(output)
+        
+    def __del__(self):
+        """Cleanup method to ensure all progress bars are closed"""
+        for pbar in self._progress_bars.values():
+            pbar.close()
+        self._progress_bars.clear()
 

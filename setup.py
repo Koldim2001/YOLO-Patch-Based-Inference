@@ -24,6 +24,7 @@ setup(
     python_requires=">=3.8",
     install_requires=[
         'numpy<2.0',
+        'tqdm',
         'opencv-python',
         'matplotlib',
         'ultralytics'
