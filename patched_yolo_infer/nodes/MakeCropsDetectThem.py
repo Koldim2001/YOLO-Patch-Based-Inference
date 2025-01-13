@@ -182,7 +182,7 @@ class MakeCropsDetectThem:
             overlap_y (float, optional): Percentage of overlap along the y-axis
                     (how much subsequent crops borrow information from previous ones)
 
-            show (bool): enables the mode to display images using plt.imshow
+            show (bool): enables the mode to display patches using plt.imshow
 
         """    
         cross_koef_x = 1 - (overlap_x / 100)
@@ -243,7 +243,7 @@ class MakeCropsDetectThem:
 
         if show:
             plt.show()
-            print('Number of generated images:', count)
+            print('Number of generated patches:', count)
 
         if self.batch_inference:
             return data_all_crops, batch_of_crops
